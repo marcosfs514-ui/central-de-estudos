@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Estudei - Método Camadas</title>
+  <title>Estudei - Aferimento de Estudos</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -45,7 +45,6 @@
       background-color: #f8fafc;
       -webkit-tap-highlight-color: transparent;
     }
-    /* Estilização suave da barra de rolagem */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #f1f5f9; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
@@ -56,9 +55,9 @@
 
   <div id="app" v-cloak class="min-h-screen flex flex-col">
 
-    <!-- CABEÇALHO AZUL MARINHO PROFUNDO (ESTUDEI STYLE) -->
+    <!-- CABEÇALHO "ESTUDEI" STYLE -->
     <header class="bg-navy-900 text-white shadow-md border-b border-slate-800 sticky top-0 z-30">
-      <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3">
         
         <!-- Logo e Título -->
         <div class="flex items-center justify-between">
@@ -71,25 +70,30 @@
                 <h1 class="text-lg font-bold tracking-tight text-white">Estudei</h1>
                 <span class="text-[10px] bg-blue-500/20 text-blue-300 border border-blue-400/30 px-2 py-0.5 rounded-full font-semibold">Método Camadas</span>
               </div>
-              <p class="text-xs text-slate-400">Aferimento de Desempenho e Metas</p>
+              <p class="text-xs text-slate-400">Aferimento de Desempenho e Revisões</p>
             </div>
           </div>
 
-          <!-- Status Conexão Firebase (Mobile) -->
-          <button @click="openFirebaseModal" class="md:hidden flex items-center gap-1.5 text-xs bg-slate-800 border border-slate-700 px-2.5 py-1.5 rounded-lg text-slate-300">
-            <span class="w-2 h-2 rounded-full" :class="firebaseConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'"></span>
-            <span>{{ firebaseConnected ? 'Nuvem' : 'Local' }}</span>
-          </button>
+          <!-- Indicador de Conexão Mobile -->
+          <div class="md:hidden flex items-center gap-2">
+            <button @click="modals.firebase = true" 
+                    class="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg border font-medium transition"
+                    :class="firebaseConnected ? 'bg-emerald-950/60 border-emerald-500/40 text-emerald-300' : 'bg-amber-950/60 border-amber-500/40 text-amber-300'">
+              <span class="w-2 h-2 rounded-full" :class="firebaseConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'"></span>
+              <span>{{ firebaseConnected ? 'Nuvem' : 'Tablet' }}</span>
+            </button>
+          </div>
         </div>
 
-        <!-- Ações Principais do Topo -->
+        <!-- Barra de Ações Principais -->
         <div class="flex items-center gap-2 sm:gap-3">
-          <!-- Botão Conexão Firebase (Desktop/Tablet) -->
-          <button @click="openFirebaseModal" 
-                  class="hidden md:flex items-center gap-2 text-xs bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 px-3 py-2.5 rounded-xl text-slate-300 hover:text-white transition">
-            <i class="ph-bold ph-database text-base" :class="firebaseConnected ? 'text-emerald-400' : 'text-slate-400'"></i>
-            <span class="font-medium">{{ firebaseConnected ? 'Sincronizado' : 'Conectar Firebase' }}</span>
-            <span class="w-2 h-2 rounded-full ml-0.5" :class="firebaseConnected ? 'bg-emerald-400' : 'bg-amber-400'"></span>
+          <!-- Indicador de Status Cloud (Desktop/Tablet) -->
+          <button @click="modals.firebase = true" 
+                  class="hidden md:flex items-center gap-2 text-xs px-3 py-2 rounded-xl border font-medium transition"
+                  :class="firebaseConnected ? 'bg-slate-800/90 border-slate-700 text-emerald-400 hover:bg-slate-800' : 'bg-slate-800/90 border-slate-700 text-amber-400 hover:bg-slate-800'">
+            <i class="ph-bold ph-cloud-check text-base" :class="firebaseConnected ? 'text-emerald-400' : 'text-amber-400'"></i>
+            <span>{{ firebaseConnected ? 'Sincronizado na Nuvem' : 'Salvo no Tablet' }}</span>
+            <span class="w-2 h-2 rounded-full ml-1" :class="firebaseConnected ? 'bg-emerald-400' : 'bg-amber-400'"></span>
           </button>
 
           <!-- Botão Nova Disciplina -->
@@ -99,7 +103,7 @@
             <span>Nova Disciplina</span>
           </button>
 
-          <!-- Botão Principal + Registrar Questões -->
+          <!-- Botão Principal Lançar Questões -->
           <button @click="openQuickLogModal()" 
                   :disabled="disciplines.length === 0 || totalAssuntosCount === 0"
                   class="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-xs sm:text-sm font-bold px-4 py-2.5 rounded-xl transition flex items-center justify-center gap-2 shadow-md shadow-blue-600/20 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -111,13 +115,22 @@
       </div>
     </header>
 
+    <!-- NOTIFICAÇÃO TOAST TEMPORÁRIA -->
+    <transition enter-active-class="transition duration-300 ease-out" enter-from-class="transform -translate-y-2 opacity-0" enter-to-class="transform translate-y-0 opacity-100" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+      <div v-if="toast.show" 
+           class="fixed top-20 right-4 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl border border-slate-700 flex items-center gap-3 text-xs sm:text-sm">
+        <i class="ph-bold text-lg" :class="toast.type === 'success' ? 'ph-check-circle text-emerald-400' : 'ph-warning-circle text-amber-400'"></i>
+        <span>{{ toast.message }}</span>
+      </div>
+    </transition>
+
     <!-- CONTEÚDO PRINCIPAL -->
     <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
 
-      <!-- CARDS DE RESUMO RÁPIDO (ESTUDEI STYLE) -->
+      <!-- DASHBOARD DE METRICAS (ESTUDEI CARDS) -->
       <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         
-        <!-- Card 1: Total Questões -->
+        <!-- Total Questões -->
         <div class="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm flex flex-col justify-between">
           <div class="flex items-center justify-between">
             <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Questões</span>
@@ -135,7 +148,7 @@
           </div>
         </div>
 
-        <!-- Card 2: % Acerto Geral -->
+        <!-- % Acerto Geral -->
         <div class="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm flex flex-col justify-between">
           <div class="flex items-center justify-between">
             <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">% Acerto Geral</span>
@@ -147,11 +160,11 @@
             <div class="text-2xl sm:text-3xl font-extrabold font-mono" :class="getAccuracyColorText(globalStats.accuracy, globalStats.totalFeitas)">
               {{ globalStats.totalFeitas > 0 ? globalStats.accuracy.toFixed(1) + '%' : '0.0%' }}
             </div>
-            <p class="text-xs text-slate-500 mt-1">Taxa de rendimento global</p>
+            <p class="text-xs text-slate-500 mt-1">Rendimento Global</p>
           </div>
         </div>
 
-        <!-- Card 3: Ciclo 3 (Domínio) -->
+        <!-- Ciclo 3 (Domínio >= 90%) -->
         <div class="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm flex flex-col justify-between">
           <div class="flex items-center justify-between">
             <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Ciclo 3 (≥90%)</span>
@@ -163,11 +176,11 @@
             <div class="text-2xl sm:text-3xl font-extrabold text-emerald-600 font-mono">
               {{ countInCycle(90, 100) }}
             </div>
-            <p class="text-xs text-slate-500 mt-1">Assunto(s) em nível avançado</p>
+            <p class="text-xs text-slate-500 mt-1">Assuntos em nível avançado</p>
           </div>
         </div>
 
-        <!-- Card 4: Alerta Urgente (<60%) -->
+        <!-- Alerta Urgente (<60%) -->
         <div class="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm flex flex-col justify-between"
              :class="{'border-rose-300 bg-rose-50/20': countInCycle(0, 59.9) > 0}">
           <div class="flex items-center justify-between">
@@ -180,18 +193,18 @@
             <div class="text-2xl sm:text-3xl font-extrabold text-rose-600 font-mono">
               {{ countInCycle(0, 59.9) }}
             </div>
-            <p class="text-xs text-slate-500 mt-1">Assunto(s) precisando de reforço</p>
+            <p class="text-xs text-slate-500 mt-1">Assuntos precisando de foco</p>
           </div>
         </div>
 
       </section>
 
-      <!-- RÉGUA EXPLICATIVA DO MÉTODO CAMADAS -->
+      <!-- LEGENDA MÉTODO CAMADAS -->
       <section class="bg-white border border-slate-200/80 rounded-xl p-3.5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
         <span class="font-bold text-slate-700 flex items-center gap-1.5">
           <i class="ph-bold ph-layers text-blue-600 text-base"></i> Método Camadas:
         </span>
-        <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 sm:gap-4">
+        <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 sm:gap-3">
           <span class="flex items-center gap-1.5 font-medium text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-lg">
             <span class="w-2 h-2 rounded-full bg-rose-500"></span>🔴 &lt; 60% Alerta
           </span>
@@ -207,15 +220,15 @@
         </div>
       </section>
 
-      <!-- SEÇÃO "O QUE PRECISAMOS MELHORAR" (PONTOS CRÍTICOS) -->
-      <section v-if="pioresAssuntos.length > 0" class="bg-gradient-to-r from-rose-50/80 to-amber-50/50 border border-rose-200/80 rounded-xl p-4 sm:p-5 shadow-sm space-y-3">
+      <!-- PAINEL "O QUE PRECISO MELHORAR" (PONTOS CRÍTICOS) -->
+      <section v-if="pioresAssuntos.length > 0" class="bg-gradient-to-r from-rose-50/80 to-amber-50/40 border border-rose-200/80 rounded-xl p-4 sm:p-5 shadow-sm space-y-3">
         <div class="flex items-center justify-between">
           <h2 class="text-sm font-bold text-rose-900 flex items-center gap-2">
             <i class="ph-bold ph-warning text-rose-600 text-lg"></i>
-            O Que Precisamos Melhorar (Prioridade de Revisão)
+            O Que Preciso Melhorar (Menores Índices)
           </h2>
           <span class="text-[11px] text-rose-700 font-medium bg-rose-100 border border-rose-200 px-2 py-0.5 rounded-full">
-            Top 3 Menores Índices
+            Prioridade de Treino
           </span>
         </div>
 
@@ -235,7 +248,6 @@
                 </span>
               </div>
 
-              <!-- Barra de Progresso Rápida -->
               <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                 <div class="h-full rounded-full transition-all duration-500"
                      :class="getProgressBarColor(item.accuracy, item.feitas)"
@@ -251,26 +263,28 @@
         </div>
       </section>
 
-      <!-- ESTADO VAZIO (NENHUMA DISCIPLINA) -->
-      <div v-if="disciplines.length === 0" class="text-center py-16 bg-white border border-dashed border-slate-300 rounded-2xl p-6 shadow-sm">
-        <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">
+      <!-- SEM DISCIPLINAS (ESTADO INICIAL) -->
+      <div v-if="disciplines.length === 0" class="text-center py-16 bg-white border border-dashed border-slate-300 rounded-2xl p-6 shadow-sm space-y-4">
+        <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-3xl mx-auto">
           <i class="ph-bold ph-books"></i>
         </div>
-        <h3 class="text-base font-bold text-slate-800">Seu plano de estudos está vazio</h3>
-        <p class="text-xs sm:text-sm text-slate-500 mt-1 max-w-md mx-auto">
-          Adicione suas disciplinas e assuntos para começar a medir seus acertos com a precisão do Método Camadas.
-        </p>
-        <button @click="openDisciplineModal" class="mt-5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-xs sm:text-sm font-bold px-5 py-2.5 rounded-xl transition inline-flex items-center gap-2 shadow-md">
+        <div class="space-y-1">
+          <h3 class="text-base font-bold text-slate-800">Seu plano de estudos está pronto!</h3>
+          <p class="text-xs sm:text-sm text-slate-500 max-w-md mx-auto">
+            Cadastre sua primeira disciplina e assuntos para começar a aferir seu desempenho pelo Método Camadas.
+          </p>
+        </div>
+        <button @click="openDisciplineModal" class="bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-xs sm:text-sm font-bold px-5 py-2.5 rounded-xl transition inline-flex items-center gap-2 shadow-md">
           <i class="ph-bold ph-plus"></i> Cadastrar Primeira Disciplina
         </button>
       </div>
 
-      <!-- VISÃO POR DISCIPLINAS (CARDS REFRÁTEIS / ACCORDION STYLE) -->
+      <!-- VISÃO ACCORDION POR DISCIPLINAS -->
       <section v-else class="space-y-4">
         
         <div v-for="disc in disciplines" :key="disc.id" class="bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden transition-all">
           
-          <!-- Cabeçalho da Disciplina (Accordion Trigger) -->
+          <!-- Cabeçalho da Disciplina -->
           <div class="p-4 sm:p-5 bg-white hover:bg-slate-50/80 transition cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100"
                @click="disc.expanded = !disc.expanded">
             
@@ -286,18 +300,17 @@
                     {{ disc.subjects.length }} assunto(s)
                   </span>
                 </div>
-                <!-- Resumo da Disciplina -->
                 <p class="text-xs text-slate-500 mt-0.5 flex items-center gap-2 font-mono">
                   <span>{{ getDisciplineStats(disc).totalFeitas }} questões</span>
                   <span>•</span>
                   <span class="font-bold" :class="getAccuracyColorText(getDisciplineStats(disc).accuracy, getDisciplineStats(disc).totalFeitas)">
-                    {{ getDisciplineStats(disc).totalFeitas > 0 ? getDisciplineStats(disc).accuracy.toFixed(1) + '%' : 'Sem registros' }}
+                    {{ getDisciplineStats(disc).totalFeitas > 0 ? getDisciplineStats(disc).accuracy.toFixed(1) + '%' : 'Sem histórico' }}
                   </span>
                 </p>
               </div>
             </div>
 
-            <!-- Ações no Cabeçalho da Disciplina -->
+            <!-- Botões de Ação na Disciplina -->
             <div class="flex items-center gap-2 self-end sm:self-center" @click.stop>
               <button @click="openSubjectModal(disc.id)" 
                       class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-3 py-2 rounded-xl transition flex items-center gap-1.5">
@@ -305,7 +318,7 @@
                 <span>Novo Assunto</span>
               </button>
               
-              <button @click="deleteDiscipline(disc.id)" 
+              <button @click="confirmDelete('discipline', disc.id, null, disc.name)" 
                       title="Excluir Disciplina" 
                       class="text-slate-400 hover:text-rose-600 p-2 rounded-lg hover:bg-rose-50 transition">
                 <i class="ph-bold ph-trash text-base"></i>
@@ -314,18 +327,18 @@
 
           </div>
 
-          <!-- Conteúdo Expansível (Lista de Assuntos) -->
+          <!-- Conteúdo da Disciplina (Assuntos) -->
           <div v-show="disc.expanded" class="p-4 sm:p-5 bg-slate-50/50 space-y-3">
             
             <div v-if="disc.subjects.length === 0" class="text-center py-6 text-slate-400 text-xs italic bg-white border border-dashed border-slate-200 rounded-xl">
-              Nenhum assunto cadastrado nesta disciplina. Clique em "+ Novo Assunto" acima.
+              Nenhum assunto nesta disciplina. Clique em "+ Novo Assunto" acima.
             </div>
 
-            <!-- CARD DE CADA ASSUNTO COM BARRA DE PROGRESSO -->
+            <!-- Card de Cada Assunto -->
             <div v-for="subj in disc.subjects" :key="subj.id" 
                  class="bg-white border border-slate-200/80 rounded-xl p-3.5 sm:p-4 shadow-sm hover:border-slate-300 transition flex flex-col md:flex-row md:items-center justify-between gap-4">
               
-              <!-- Nome e Selo de Camada -->
+              <!-- Nome e Selo -->
               <div class="space-y-1.5 md:w-1/3">
                 <div class="flex items-center gap-2">
                   <span class="font-bold text-sm text-slate-800">{{ subj.name }}</span>
@@ -338,11 +351,11 @@
                 </div>
               </div>
 
-              <!-- Métrica e Barra Visual -->
+              <!-- Métrica e Progresso -->
               <div class="flex-1 space-y-1.5">
                 <div class="flex items-center justify-between text-xs font-medium">
                   <span class="text-slate-500 font-mono">
-                    <b class="text-slate-800">{{ subj.feitas }}</b> Feitas • 
+                    <b class="text-slate-800">{{ subj.feitas }}</b> Qs • 
                     <b class="text-emerald-600">{{ getAcertos(subj) }}</b> Acertos • 
                     <b class="text-rose-600">{{ subj.erros }}</b> Erros
                   </span>
@@ -351,627 +364,6 @@
                   </span>
                 </div>
 
-                <!-- Barra de Progresso Customizada -->
                 <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
                   <div class="h-full rounded-full transition-all duration-500"
-                       :class="getProgressBarColor(getAccuracy(subj), subj.feitas)"
-                       :style="{ width: Math.min(getAccuracy(subj), 100) + '%' }"></div>
-                </div>
-              </div>
-
-              <!-- Botões de Ação do Assunto -->
-              <div class="flex items-center gap-2 self-end md:self-center pt-2 md:pt-0">
-                <button @click="openQuickLogModal(disc.id, subj.id)" 
-                        class="bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-semibold text-xs px-3 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm">
-                  <i class="ph-bold ph-plus-circle"></i>
-                  <span>+ Questões</span>
-                </button>
-
-                <button @click="deleteSubject(disc.id, subj.id)" 
-                        title="Excluir Assunto" 
-                        class="text-slate-400 hover:text-rose-600 p-2 rounded-lg hover:bg-rose-50 transition">
-                  <i class="ph-bold ph-trash text-base"></i>
-                </button>
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-    </main>
-
-    <!-- MODAL 1: REGISTRAR QUESTÕES (LANÇAMENTO ÁGIL) -->
-    <div v-if="modals.quickLog" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div class="bg-white border border-slate-200 w-full max-w-md rounded-2xl p-5 sm:p-6 space-y-4 shadow-xl">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h3 class="font-bold text-base text-slate-900 flex items-center gap-2">
-            <i class="ph-bold ph-plus-circle text-blue-600 text-xl"></i>
-            Registrar Questões
-          </h3>
-          <button @click="modals.quickLog = false" class="text-slate-400 hover:text-slate-600 p-1">
-            <i class="ph-bold ph-x text-lg"></i>
-          </button>
-        </div>
-
-        <form @submit.prevent="saveQuickLog" class="space-y-4">
-          <!-- Selecionar Disciplina -->
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Disciplina</label>
-            <select v-model="logForm.disciplineId" @change="logForm.subjectId = ''" required
-                    class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="" disabled>Selecione a disciplina...</option>
-              <option v-for="d in disciplines" :key="d.id" :value="d.id">{{ d.name }}</option>
-            </select>
-          </div>
-
-          <!-- Selecionar Assunto -->
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Assunto</label>
-            <select v-model="logForm.subjectId" required :disabled="!logForm.disciplineId"
-                    class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50">
-              <option value="" disabled>Selecione o assunto...</option>
-              <option v-for="s in currentSubjectsForLog" :key="s.id" :value="s.id">{{ s.name }}</option>
-            </select>
-          </div>
-
-          <!-- Modo: Somar ou Substituir -->
-          <div class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-semibold">
-            <button type="button" @click="logForm.mode = 'add'"
-                    :class="logForm.mode === 'add' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
-                    class="py-2 rounded-lg transition text-center">
-              + Somar ao Total
-            </button>
-            <button type="button" @click="logForm.mode = 'set'"
-                    :class="logForm.mode === 'set' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
-                    class="py-2 rounded-lg transition text-center">
-              Substituir Totais
-            </button>
-          </div>
-
-          <!-- Quantidade Feitas e Erros -->
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Questões Feitas</label>
-              <input type="number" min="1" v-model.number="logForm.feitas" required placeholder="Ex: 20"
-                     class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Quantas Errou?</label>
-              <input type="number" min="0" :max="logForm.feitas || 9999" v-model.number="logForm.erros" required placeholder="Ex: 4"
-                     class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
-            </div>
-          </div>
-
-          <!-- Rodapé do Modal -->
-          <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
-            <button type="button" @click="modals.quickLog = false" 
-                    class="px-4 py-2 text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">
-              Cancelar
-            </button>
-            <button type="submit" 
-                    class="px-5 py-2 text-xs sm:text-sm bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-md">
-              Confirmar e Salvar
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- MODAL 2: NOVA DISCIPLINA -->
-    <div v-if="modals.discipline" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div class="bg-white border border-slate-200 w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-xl">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h3 class="font-bold text-base text-slate-900">Nova Disciplina</h3>
-          <button @click="modals.discipline = false" class="text-slate-400 hover:text-slate-600"><i class="ph-bold ph-x"></i></button>
-        </div>
-        <form @submit.prevent="saveDiscipline" class="space-y-3">
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Nome da Disciplina</label>
-            <input type="text" v-model.trim="disciplineName" required placeholder="Ex: Direito Constitucional"
-                   class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
-          </div>
-          <div class="flex justify-end gap-2 pt-2">
-            <button type="button" @click="modals.discipline = false" class="px-3 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-100 rounded-xl">Cancelar</button>
-            <button type="submit" class="px-4 py-2 text-xs bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-md">Salvar</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- MODAL 3: NOVO ASSUNTO -->
-    <div v-if="modals.subject" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div class="bg-white border border-slate-200 w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-xl">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h3 class="font-bold text-base text-slate-900">Novo Assunto</h3>
-          <button @click="modals.subject = false" class="text-slate-400 hover:text-slate-600"><i class="ph-bold ph-x"></i></button>
-        </div>
-        <form @submit.prevent="saveSubject" class="space-y-3">
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Nome do Assunto</label>
-            <input type="text" v-model.trim="subjectName" required placeholder="Ex: Direitos Fundamentais"
-                   class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Feitas (Opcional)</label>
-              <input type="number" min="0" v-model.number="subjectFeitas" placeholder="0"
-                     class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Erros (Opcional)</label>
-              <input type="number" min="0" :max="subjectFeitas || 999" v-model.number="subjectErros" placeholder="0"
-                     class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-          </div>
-          <div class="flex justify-end gap-2 pt-2">
-            <button type="button" @click="modals.subject = false" class="px-3 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-100 rounded-xl">Cancelar</button>
-            <button type="submit" class="px-4 py-2 text-xs bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-md">Salvar Assunto</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- MODAL 4: CONFIGURAÇÃO FIREBASE -->
-    <div v-if="modals.firebase" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div class="bg-white border border-slate-200 w-full max-w-lg rounded-2xl p-5 sm:p-6 space-y-4 shadow-xl">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h3 class="font-bold text-base text-slate-900 flex items-center gap-2">
-            <i class="ph-bold ph-database text-blue-600 text-xl"></i>
-            Conexão com Firebase (Nouvem)
-          </h3>
-          <button @click="modals.firebase = false" class="text-slate-400 hover:text-slate-600"><i class="ph-bold ph-x"></i></button>
-        </div>
-
-        <p class="text-xs text-slate-600">
-          Cole abaixo as credenciais do seu projeto Firebase (obtidas no Console do Firebase em <i>Configurações do Projeto</i>) para sincronizar seus dados na nuvem.
-        </p>
-
-        <form @submit.prevent="saveFirebaseConfig" class="space-y-3">
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Cole o objeto firebaseConfig ou preencha:</label>
-            <textarea v-model="fbRawInput" @input="parseFbRawInput" rows="3" placeholder='{ "apiKey": "...", "authDomain": "...", "projectId": "..." }'
-                      class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-          </div>
-
-          <div class="grid grid-cols-2 gap-2 text-xs">
-            <div>
-              <label class="block font-medium text-slate-500">apiKey</label>
-              <input type="text" v-model="fbConfig.apiKey" placeholder="AIzaSy..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono">
-            </div>
-            <div>
-              <label class="block font-medium text-slate-500">projectId</label>
-              <input type="text" v-model="fbConfig.projectId" placeholder="meu-projeto" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono">
-            </div>
-            <div>
-              <label class="block font-medium text-slate-500">authDomain</label>
-              <input type="text" v-model="fbConfig.authDomain" placeholder="meu-projeto.firebaseapp.com" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono">
-            </div>
-            <div>
-              <label class="block font-medium text-slate-500">appId</label>
-              <input type="text" v-model="fbConfig.appId" placeholder="1:123456:web:..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono">
-            </div>
-          </div>
-
-          <div class="flex items-center justify-between pt-2 border-t border-slate-100">
-            <button type="button" @click="clearFirebaseConfig" class="text-xs text-rose-600 hover:underline">
-              Desconectar / Limpar
-            </button>
-            <div class="flex gap-2">
-              <button type="button" @click="modals.firebase = false" class="px-3 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-100 rounded-xl">Cancelar</button>
-              <button type="submit" class="px-4 py-2 text-xs bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-md">Salvar e Conectar</button>
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- FIREBASE SDK 11.6.1 MODULAR BOOTSTRAPPER -->
-  <script type="module">
-    import { initializeApp, getApps, deleteApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-
-    // Expor Utilitário Global do Firebase para Vue
-    window.FBService = {
-      app: null,
-      db: null,
-      unsubscribe: null,
-
-      async init(config, onDataReceived) {
-        try {
-          if (!config || !config.apiKey || !config.projectId) {
-            return false;
-          }
-
-          // Se já existir um app ativo, removemos para re-inicializar
-          const currentApps = getApps();
-          if (currentApps.length > 0) {
-            await deleteApp(currentApps[0]);
-          }
-
-          this.app = initializeApp(config);
-          this.db = getFirestore(this.app);
-          const auth = getAuth(this.app);
-
-          await signInAnonymously(auth);
-
-          // Escuta alterações no Firestore em tempo real
-          const docRef = doc(this.db, 'artifacts', 'estudei_app', 'public', 'user_data');
-          this.unsubscribe = onSnapshot(docRef, (docSnap) => {
-            if (docSnap.exists() && docSnap.data().disciplines) {
-              onDataReceived(docSnap.data().disciplines);
-            }
-          }, (err) => {
-            console.warn("Erro Firestore snapshot:", err);
-          });
-
-          return true;
-        } catch (e) {
-          console.error("Falha ao inicializar Firebase:", e);
-          return false;
-        }
-      },
-
-      async saveData(disciplines) {
-        if (!this.db) return false;
-        try {
-          const docRef = doc(this.db, 'artifacts', 'estudei_app', 'public', 'user_data');
-          await setDoc(docRef, { 
-            disciplines: disciplines,
-            updatedAt: new Date().toISOString()
-          }, { merge: true });
-          return true;
-        } catch (e) {
-          console.error("Erro ao salvar no Firestore:", e);
-          return false;
-        }
-      }
-    };
-  </script>
-
-  <!-- LÓGICA VUE 3 -->
-  <script>
-    const { createApp } = Vue;
-
-    createApp({
-      data() {
-        return {
-          disciplines: [],
-          firebaseConnected: false,
-          fbConfig: {
-            apiKey: '',
-            authDomain: '',
-            projectId: '',
-            appId: ''
-          },
-          fbRawInput: '',
-          modals: {
-            discipline: false,
-            subject: false,
-            quickLog: false,
-            firebase: false
-          },
-          disciplineName: '',
-          selectedDisciplineId: null,
-          subjectName: '',
-          subjectFeitas: null,
-          subjectErros: 0,
-          logForm: {
-            disciplineId: '',
-            subjectId: '',
-            mode: 'add',
-            feitas: null,
-            erros: 0
-          }
-        }
-      },
-      computed: {
-        totalAssuntosCount() {
-          return this.disciplines.reduce((sum, d) => sum + d.subjects.length, 0);
-        },
-
-        currentSubjectsForLog() {
-          const disc = this.disciplines.find(d => d.id === this.logForm.disciplineId);
-          return disc ? disc.subjects : [];
-        },
-
-        globalStats() {
-          let totalFeitas = 0;
-          let totalErros = 0;
-
-          this.disciplines.forEach(d => {
-            d.subjects.forEach(s => {
-              totalFeitas += s.feitas || 0;
-              totalErros += s.erros || 0;
-            });
-          });
-
-          const totalAcertos = Math.max(0, totalFeitas - totalErros);
-          const accuracy = totalFeitas > 0 ? (totalAcertos / totalFeitas) * 100 : 0;
-
-          return { totalFeitas, totalErros, totalAcertos, accuracy };
-        },
-
-        pioresAssuntos() {
-          const list = [];
-          this.disciplines.forEach(d => {
-            d.subjects.forEach(s => {
-              if (s.feitas > 0) {
-                const acc = this.getAccuracy(s);
-                list.push({
-                  disciplineId: d.id,
-                  disciplineName: d.name,
-                  subjectId: s.id,
-                  subjectName: s.name,
-                  feitas: s.feitas,
-                  erros: s.erros,
-                  accuracy: acc
-                });
-              }
-            });
-          });
-
-          // Ordena pelo menor percentual
-          return list.sort((a, b) => a.accuracy - b.accuracy).slice(0, 3);
-        }
-      },
-      mounted() {
-        this.loadLocalData();
-        this.tryInitFirebaseFromStorage();
-      },
-      methods: {
-        loadLocalData() {
-          const saved = localStorage.getItem('estudei_camadas_data_v3');
-          if (saved) {
-            try {
-              const parsed = JSON.parse(saved);
-              this.disciplines = parsed.map(d => ({ ...d, expanded: d.expanded !== undefined ? d.expanded : true }));
-            } catch (e) {
-              this.disciplines = [];
-            }
-          }
-        },
-
-        saveData() {
-          // Salva localmente sempre
-          localStorage.setItem('estudei_camadas_data_v3', JSON.stringify(this.disciplines));
-
-          // Se Firebase estiver ativo, salva no Firestore
-          if (this.firebaseConnected && window.FBService) {
-            window.FBService.saveData(this.disciplines);
-          }
-        },
-
-        async tryInitFirebaseFromStorage() {
-          const savedCfg = localStorage.getItem('estudei_fb_config');
-          if (savedCfg) {
-            try {
-              this.fbConfig = JSON.parse(savedCfg);
-              if (window.FBService) {
-                const ok = await window.FBService.init(this.fbConfig, (remoteDisciplines) => {
-                  this.disciplines = remoteDisciplines.map(d => ({ ...d, expanded: d.expanded !== undefined ? d.expanded : true }));
-                  localStorage.setItem('estudei_camadas_data_v3', JSON.stringify(this.disciplines));
-                });
-                this.firebaseConnected = ok;
-              }
-            } catch (e) {
-              this.firebaseConnected = false;
-            }
-          }
-        },
-
-        getAcertos(subject) {
-          return Math.max(0, (subject.feitas || 0) - (subject.erros || 0));
-        },
-
-        getAccuracy(subject) {
-          if (!subject || subject.feitas <= 0) return 0;
-          return (this.getAcertos(subject) / subject.feitas) * 100;
-        },
-
-        getDisciplineStats(disc) {
-          let totalFeitas = 0;
-          let totalErros = 0;
-          disc.subjects.forEach(s => {
-            totalFeitas += s.feitas || 0;
-            totalErros += s.erros || 0;
-          });
-          const totalAcertos = Math.max(0, totalFeitas - totalErros);
-          const accuracy = totalFeitas > 0 ? (totalAcertos / totalFeitas) * 100 : 0;
-          return { totalFeitas, totalErros, totalAcertos, accuracy };
-        },
-
-        countInCycle(min, max) {
-          let count = 0;
-          this.disciplines.forEach(d => {
-            d.subjects.forEach(s => {
-              if (s.feitas > 0) {
-                const acc = this.getAccuracy(s);
-                if (acc >= min && acc <= max) count++;
-              }
-            });
-          });
-          return count;
-        },
-
-        getAccuracyColorText(acc, feitas) {
-          if (!feitas || feitas === 0) return 'text-slate-400';
-          if (acc < 60) return 'text-rose-600';
-          if (acc < 75) return 'text-amber-600';
-          if (acc < 90) return 'text-blue-600';
-          return 'text-emerald-600';
-        },
-
-        getProgressBarColor(acc, feitas) {
-          if (!feitas || feitas === 0) return 'bg-slate-300';
-          if (acc < 60) return 'bg-rose-500';
-          if (acc < 75) return 'bg-amber-500';
-          if (acc < 90) return 'bg-blue-500';
-          return 'bg-emerald-500';
-        },
-
-        getLayerText(acc, feitas) {
-          if (!feitas || feitas === 0) return 'Sem histórico';
-          if (acc < 60) return '🔴 < 60% Alerta';
-          if (acc < 75) return '🟡 Ciclo 1 (≥60%)';
-          if (acc < 90) return '🔵 Ciclo 2 (≥75%)';
-          return '🟢 Ciclo 3 (≥90%)';
-        },
-
-        getLayerBadgeClass(acc, feitas) {
-          if (!feitas || feitas === 0) return 'bg-slate-100 text-slate-500 border border-slate-200';
-          if (acc < 60) return 'bg-rose-50 text-rose-700 border border-rose-200';
-          if (acc < 75) return 'bg-amber-50 text-amber-700 border border-amber-200';
-          if (acc < 90) return 'bg-blue-50 text-blue-700 border border-blue-200';
-          return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
-        },
-
-        // Gestão de Disciplina
-        openDisciplineModal() {
-          this.disciplineName = '';
-          this.modals.discipline = true;
-        },
-
-        saveDiscipline() {
-          if (!this.disciplineName) return;
-          this.disciplines.push({
-            id: 'd_' + Date.now(),
-            name: this.disciplineName,
-            expanded: true,
-            subjects: []
-          });
-          this.saveData();
-          this.modals.discipline = false;
-        },
-
-        deleteDiscipline(id) {
-          if (confirm('Tem certeza que deseja excluir esta disciplina e seus assuntos?')) {
-            this.disciplines = this.disciplines.filter(d => d.id !== id);
-            this.saveData();
-          }
-        },
-
-        // Gestão de Assunto
-        openSubjectModal(disciplineId) {
-          this.selectedDisciplineId = disciplineId;
-          this.subjectName = '';
-          this.subjectFeitas = null;
-          this.subjectErros = 0;
-          this.modals.subject = true;
-        },
-
-        saveSubject() {
-          const disc = this.disciplines.find(d => d.id === this.selectedDisciplineId);
-          if (!disc || !this.subjectName) return;
-
-          disc.subjects.push({
-            id: 's_' + Date.now(),
-            name: this.subjectName,
-            feitas: Number(this.subjectFeitas) || 0,
-            erros: Number(this.subjectErros) || 0
-          });
-
-          this.saveData();
-          this.modals.subject = false;
-        },
-
-        deleteSubject(disciplineId, subjectId) {
-          const disc = this.disciplines.find(d => d.id === disciplineId);
-          if (disc) {
-            disc.subjects = disc.subjects.filter(s => s.id !== subjectId);
-            this.saveData();
-          }
-        },
-
-        // Lançamento Ágil
-        openQuickLogModal(disciplineId = null, subjectId = null) {
-          this.logForm.disciplineId = disciplineId || (this.disciplines[0] ? this.disciplines[0].id : '');
-          this.logForm.subjectId = subjectId || '';
-          this.logForm.mode = 'add';
-          this.logForm.feitas = null;
-          this.logForm.erros = 0;
-          this.modals.quickLog = true;
-        },
-
-        saveQuickLog() {
-          const disc = this.disciplines.find(d => d.id === this.logForm.disciplineId);
-          if (!disc) return;
-
-          const subj = disc.subjects.find(s => s.id === this.logForm.subjectId);
-          if (!subj) return;
-
-          const feitasInput = Number(this.logForm.feitas) || 0;
-          const errosInput = Number(this.logForm.erros) || 0;
-
-          if (this.logForm.mode === 'add') {
-            subj.feitas = (subj.feitas || 0) + feitasInput;
-            subj.erros = (subj.erros || 0) + errosInput;
-          } else {
-            subj.feitas = feitasInput;
-            subj.erros = errosInput;
-          }
-
-          this.saveData();
-          this.modals.quickLog = false;
-        },
-
-        // Firebase Modal & Config
-        openFirebaseModal() {
-          this.modals.firebase = true;
-        },
-
-        parseFbRawInput() {
-          try {
-            const parsed = JSON.parse(this.fbRawInput);
-            if (parsed.apiKey) this.fbConfig.apiKey = parsed.apiKey;
-            if (parsed.projectId) this.fbConfig.projectId = parsed.projectId;
-            if (parsed.authDomain) this.fbConfig.authDomain = parsed.authDomain;
-            if (parsed.appId) this.fbConfig.appId = parsed.appId;
-          } catch(e) {}
-        },
-
-        async saveFirebaseConfig() {
-          if (!this.fbConfig.apiKey || !this.fbConfig.projectId) {
-            alert('Por favor, informe ao menos a apiKey e o projectId do seu Firebase.');
-            return;
-          }
-
-          localStorage.setItem('estudei_fb_config', JSON.stringify(this.fbConfig));
-
-          if (window.FBService) {
-            const ok = await window.FBService.init(this.fbConfig, (remoteDisciplines) => {
-              this.disciplines = remoteDisciplines;
-              localStorage.setItem('estudei_camadas_data_v3', JSON.stringify(this.disciplines));
-            });
-
-            this.firebaseConnected = ok;
-            if (ok) {
-              await window.FBService.saveData(this.disciplines);
-              alert('Conectado ao Firebase com sucesso!');
-              this.modals.firebase = false;
-            } else {
-              alert('Falha ao conectar ao Firebase. Verifique suas credenciais.');
-            }
-          }
-        },
-
-        clearFirebaseConfig() {
-          localStorage.removeItem('estudei_fb_config');
-          this.fbConfig = { apiKey: '', authDomain: '', projectId: '', appId: '' };
-          this.fbRawInput = '';
-          this.firebaseConnected = false;
-          alert('Configurações do Firebase removidas. O app agora usará apenas o armazenamento local.');
-          this.modals.firebase = false;
-        }
-      }
-    }).mount('#app');
-  </script>
-</body>
-</html>
-```
+                       :class="get
