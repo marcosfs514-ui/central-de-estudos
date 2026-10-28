@@ -32,7 +32,6 @@
                 <div id="cloud-status" class="flex items-center gap-2 text-xs font-medium px-3 py-1 rounded-full bg-slate-800 border border-slate-700">
                     <i data-lucide="loader-2" class="w-3 h-3 animate-spin text-blue-400"></i> A ligar...
                 </div>
-                <!-- Nova Função: Mostrar/Trocar ID de Sincronização -->
                 <button onclick="gerenciarID()" class="text-[10px] text-slate-400 hover:text-white flex items-center gap-1 bg-slate-800/50 px-2 py-0.5 rounded">
                     ID: <span id="display-user-id" class="font-mono text-blue-300">...</span> <i data-lucide="key" class="w-3 h-3"></i>
                 </button>
@@ -42,6 +41,19 @@
 
     <main class="max-w-5xl mx-auto px-4 py-6 space-y-6">
         
+        <!-- Bússola do Ciclo de Estudos (Novo) -->
+        <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl shadow-md p-5 border border-slate-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <p class="text-blue-400 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                    <i data-lucide="compass" class="w-4 h-4"></i> Foco do Ciclo Atual
+                </p>
+                <h2 id="ciclo-nome-atual" class="text-2xl font-bold text-white">Carregando...</h2>
+            </div>
+            <button onclick="girarCiclo()" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 transition shadow-lg shrink-0">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Avançar Ciclo
+            </button>
+        </div>
+
         <!-- Dashboard / KPIs -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
@@ -140,11 +152,11 @@
 
         let db = null;
         let docRef = null;
-        let dadosLocais = { disciplinas: [] };
+        let dadosLocais = { disciplinas: [], cicloIndex: 0 };
         let disciplinasAbertas = new Set();
-        let unsubscribe = null; // Para recarregar o firebase se trocar de ID
+        let unsubscribe = null;
 
-        // 1. GESTÃO SEGURA DO ID
+        // Gestão de ID
         let userId = localStorage.getItem('estudei_tablet_id');
         if (!userId) {
             userId = 'user_' + Math.random().toString(36).substr(2, 6).toUpperCase();
@@ -153,15 +165,14 @@
         document.getElementById('display-user-id').innerText = userId;
 
         window.gerenciarID = () => {
-            const novoID = prompt(`O seu Código de Acesso atual é: ${userId}\n\nGuarde este código para acessar seus dados em outro dispositivo (celular/computador).\n\nSe deseja importar dados de outro dispositivo, digite o código dele abaixo:`, userId);
-            
+            const novoID = prompt(`O seu Código de Acesso atual é: ${userId}\n\nSe deseja importar dados de outro dispositivo, digite o código dele abaixo:`, userId);
             if (novoID && novoID.trim() !== "" && novoID !== userId) {
                 userId = novoID.trim();
                 localStorage.setItem('estudei_tablet_id', userId);
                 document.getElementById('display-user-id').innerText = userId;
-                dadosLocais = { disciplinas: [] }; // Limpa a tela antes de puxar
+                dadosLocais = { disciplinas: [], cicloIndex: 0 }; 
                 atualizarTela();
-                iniciarFirebase(); // Reconecta com o novo ID
+                iniciarFirebase(); 
             }
         };
 
@@ -171,8 +182,7 @@
                     const app = initializeApp(firebaseConfig);
                     db = getFirestore(app);
                 }
-                
-                if(unsubscribe) unsubscribe(); // Limpa escuta anterior se houver
+                if(unsubscribe) unsubscribe(); 
                 
                 docRef = doc(db, "dados_estudo", userId);
                 mostrarStatus(false, "A ligar...");
@@ -180,6 +190,7 @@
                 unsubscribe = onSnapshot(docRef, (docSnap) => {
                     if (docSnap.exists()) {
                         dadosLocais = docSnap.data();
+                        if (dadosLocais.cicloIndex === undefined) dadosLocais.cicloIndex = 0; // fallback segurança
                         atualizarTela();
                         mostrarStatus(true, "Sincronizado");
                     } else {
@@ -196,7 +207,7 @@
             }
         }
         
-        iniciarFirebase(); // Chama na inicialização
+        iniciarFirebase();
 
         function mostrarStatus(online, texto) {
             const statusEl = document.getElementById('cloud-status');
@@ -213,6 +224,7 @@
         function carregarLocal() {
             const salvo = localStorage.getItem(`estudei_dados_${userId}`);
             if (salvo) dadosLocais = JSON.parse(salvo);
+            if (dadosLocais.cicloIndex === undefined) dadosLocais.cicloIndex = 0;
             atualizarTela();
         }
 
@@ -235,6 +247,13 @@
             return { classe: 'layer-3', selo: '🟢 Ciclo 3', cor: 'text-green-600' };
         }
 
+        // --- Funções de Ciclo ---
+        window.girarCiclo = () => {
+            if (!dadosLocais.disciplinas || dadosLocais.disciplinas.length === 0) return;
+            dadosLocais.cicloIndex = (dadosLocais.cicloIndex + 1) % dadosLocais.disciplinas.length;
+            salvarDados();
+        };
+
         // --- Funções de Interface ---
         window.toggleDisciplina = (id) => {
             if (disciplinasAbertas.has(id)) disciplinasAbertas.delete(id);
@@ -256,6 +275,8 @@
             if(confirm("Excluir esta disciplina e todos os assuntos?")) {
                 dadosLocais.disciplinas = dadosLocais.disciplinas.filter(d => d.id !== id);
                 disciplinasAbertas.delete(id);
+                // Ajusta índice do ciclo se necessário
+                if(dadosLocais.cicloIndex >= dadosLocais.disciplinas.length) dadosLocais.cicloIndex = 0;
                 salvarDados();
             }
         };
@@ -270,13 +291,12 @@
                 nome, 
                 feitas: 0, 
                 erros: 0,
-                sessoes: [] // Preparação de estrutura para o futuro cronômetro
+                ultimaAtualizacao: null
             });
             disciplinasAbertas.add(discId);
             salvarDados();
         };
 
-        // 2. FUNÇÃO UNIFICADA: LANÇAR OU EDITAR
         window.abrirModalQuestoes = (discId, assuntoId, nomeAssunto, modoEdicao = false) => {
             document.getElementById('modal-disc-id').value = discId;
             document.getElementById('modal-assunto-id').value = assuntoId;
@@ -316,13 +336,9 @@
             const assuntoId = document.getElementById('modal-assunto-id').value;
             const isEdicao = document.getElementById('modal-modo-edicao').value === "true";
             
-            const inputFeitas = document.getElementById('input-feitas').value;
-            const inputErros = document.getElementById('input-erros').value;
-            
-            const feitas = parseInt(inputFeitas) || 0;
-            const erros = parseInt(inputErros) || 0;
+            const feitas = parseInt(document.getElementById('input-feitas').value) || 0;
+            const erros = parseInt(document.getElementById('input-erros').value) || 0;
 
-            // Permite zerar no modo edição, mas não permite lançar zeros no modo normal
             if (erros > feitas || (!isEdicao && feitas <= 0)) {
                 alert("Valores inválidos. Os erros não podem ser maiores que as feitas.");
                 return;
@@ -337,10 +353,7 @@
             } else {
                 assunto.feitas += feitas;
                 assunto.erros += erros;
-                
-                // Base estrutural para histórico (futuro gráfico e cronômetro)
-                if(!assunto.sessoes) assunto.sessoes = [];
-                assunto.sessoes.push({ data: new Date().toISOString(), feitas, erros });
+                assunto.ultimaAtualizacao = new Date().toISOString(); // Grava a data automaticamente
             }
             
             fecharModal();
@@ -353,7 +366,16 @@
             const listaHTML = document.getElementById('lista-disciplinas');
             listaHTML.innerHTML = '';
 
-            dadosLocais.disciplinas.forEach(disc => {
+            // Atualiza Ciclo Visual
+            if (!dadosLocais.disciplinas || dadosLocais.disciplinas.length === 0) {
+                document.getElementById('ciclo-nome-atual').innerText = "Adicione disciplinas...";
+            } else {
+                if (dadosLocais.cicloIndex >= dadosLocais.disciplinas.length) dadosLocais.cicloIndex = 0;
+                document.getElementById('ciclo-nome-atual').innerText = dadosLocais.disciplinas[dadosLocais.cicloIndex].nome;
+            }
+
+            // Loop de Disciplinas
+            (dadosLocais.disciplinas || []).forEach(disc => {
                 let htmlAssuntos = '';
                 let discFeitas = 0;
                 let discErros = 0;
@@ -374,6 +396,16 @@
                         if(perc < 60) qtsAlerta++;
                     }
 
+                    // Calcula o tempo desde a última resolução
+                    let tempoTag = `<span class="text-slate-400">Nunca resolvido</span>`;
+                    if (assunto.ultimaAtualizacao) {
+                        const dias = Math.floor((new Date() - new Date(assunto.ultimaAtualizacao)) / (1000 * 60 * 60 * 24));
+                        if (dias === 0) tempoTag = `<span class="text-green-600 font-medium">Resolvido hoje</span>`;
+                        else if (dias === 1) tempoTag = `<span class="text-slate-500">Ontem</span>`;
+                        else if (dias > 7) tempoTag = `<span class="text-orange-500 font-bold flex items-center gap-1"><i data-lucide="alert-circle" class="w-3 h-3"></i> Há ${dias} dias (Revisar)</span>`;
+                        else tempoTag = `<span class="text-slate-500">Há ${dias} dias</span>`;
+                    }
+
                     htmlAssuntos += `
                         <div class="flex flex-col md:flex-row md:items-center justify-between p-3 bg-white border border-slate-200 rounded-lg shadow-sm gap-3 hover:border-blue-300 transition-colors">
                             <div class="flex-1">
@@ -381,16 +413,17 @@
                                     <span class="text-xs font-bold px-2 py-0.5 rounded-md border ${camada.classe}">${camada.selo}</span>
                                     <h4 class="font-medium text-slate-800 text-sm leading-tight">${assunto.nome}</h4>
                                 </div>
-                                <div class="text-xs text-slate-500 mt-1.5">
-                                    Feitas: <b>${assunto.feitas}</b> &bull; Erros: <b class="text-red-600/80">${assunto.erros}</b> &bull; Acertos: <b class="text-slate-700">${acertos}</b> <span class="${camada.cor} font-bold ml-1">(${perc}%)</span>
+                                <div class="text-[11px] text-slate-500 mt-1.5 flex flex-wrap items-center gap-2">
+                                    <span>Feitas: <b>${assunto.feitas}</b></span> &bull; 
+                                    <span>Erros: <b class="text-red-600/80">${assunto.erros}</b></span> &bull; 
+                                    <span>Acertos: <b class="text-slate-700">${acertos}</b> <span class="${camada.cor} font-bold ml-1">(${perc}%)</span></span> &bull; 
+                                    ${tempoTag}
                                 </div>
                             </div>
                             <div class="flex gap-2 shrink-0">
-                                <!-- Botão Editar -->
                                 <button onclick="abrirModalQuestoes('${disc.id}', '${assunto.id}', '${assunto.nome.replace(/'/g, "\\'")}', true)" class="text-slate-400 hover:text-orange-500 bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg transition" title="Corrigir valores">
                                     <i data-lucide="pencil" class="w-4 h-4"></i>
                                 </button>
-                                <!-- Botão Lançar -->
                                 <button onclick="abrirModalQuestoes('${disc.id}', '${assunto.id}', '${assunto.nome.replace(/'/g, "\\'")}', false)" class="bg-blue-50 text-blue-700 hover:bg-blue-100 px-4 py-2 rounded-lg text-sm font-semibold border border-blue-200 flex items-center gap-1 transition">
                                     <i data-lucide="plus" class="w-4 h-4"></i> Questões
                                 </button>
@@ -425,7 +458,7 @@
                 `;
             });
 
-            // KPIs
+            // KPIs e Prioridades
             const totalAcertos = totalFeitas - totalErros;
             const percGeral = totalFeitas > 0 ? Math.round((totalAcertos / totalFeitas) * 100) : 0;
             document.getElementById('kpi-total').innerText = totalFeitas;
@@ -433,7 +466,6 @@
             document.getElementById('kpi-ciclo3').innerText = qtsCiclo3;
             document.getElementById('kpi-alerta').innerText = qtsAlerta;
 
-            // Prioridades
             const prioridades = todosAssuntos.sort((a, b) => a.perc - b.perc).slice(0, 4);
             const prioHTML = document.getElementById('lista-prioridades');
             if(prioridades.length === 0) {
