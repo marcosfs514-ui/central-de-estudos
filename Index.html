@@ -9,10 +9,12 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        .layer-alert { background-color: #fee2e2; color: #991b1b; border-color: #f87171; }
-        .layer-1 { background-color: #fef3c7; color: #92400e; border-color: #fbbf24; }
-        .layer-2 { background-color: #e0f2fe; color: #075985; border-color: #38bdf8; }
-        .layer-3 { background-color: #dcfce7; color: #166534; border-color: #4ade80; }
+        .camada-1 { background-color: #fef3c7; color: #92400e; border-color: #fbbf24; } 
+        .camada-2 { background-color: #e0f2fe; color: #075985; border-color: #38bdf8; } 
+        .camada-3 { background-color: #dcfce7; color: #166534; border-color: #4ade80; } 
+        .status-alerta { color: #dc2626; font-weight: 600; }
+        .status-sucesso { color: #16a34a; font-weight: 600; }
+        .status-neutro { color: #64748b; font-weight: 500; }
         .transition-transform { transition: transform 0.3s ease; }
     </style>
 </head>
@@ -25,14 +27,19 @@
                 <div class="bg-blue-600 p-2 rounded-lg"><i data-lucide="book-open" class="w-6 h-6 text-white"></i></div>
                 <div>
                     <h1 class="text-xl font-bold">Estudei</h1>
-                    <p class="text-xs text-slate-400">Método Camadas</p>
+                    <p class="text-[10px] text-blue-300 font-medium tracking-wide uppercase">Método Camadas PRO</p>
                 </div>
             </div>
             <div class="flex flex-col items-end gap-1">
-                <div id="cloud-status" class="flex items-center gap-2 text-xs font-medium px-3 py-1 rounded-full bg-slate-800 border border-slate-700">
-                    <i data-lucide="loader-2" class="w-3 h-3 animate-spin text-blue-400"></i> A ligar...
+                <div class="flex gap-2">
+                    <button onclick="exportarBackup()" class="text-xs flex items-center gap-1 bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded text-slate-300 transition" title="Exportar Backup">
+                        <i data-lucide="download" class="w-3 h-3"></i> Backup
+                    </button>
+                    <div id="cloud-status" class="flex items-center gap-2 text-xs font-medium px-2 py-1 rounded bg-slate-800 border border-slate-700">
+                        <i data-lucide="loader-2" class="w-3 h-3 animate-spin text-blue-400"></i>
+                    </div>
                 </div>
-                <button onclick="gerenciarID()" class="text-[10px] text-slate-400 hover:text-white flex items-center gap-1 bg-slate-800/50 px-2 py-0.5 rounded">
+                <button onclick="gerenciarID()" class="text-[10px] text-slate-400 hover:text-white flex items-center gap-1 bg-slate-800/50 px-2 py-0.5 rounded transition">
                     ID: <span id="display-user-id" class="font-mono text-blue-300">...</span> <i data-lucide="key" class="w-3 h-3"></i>
                 </button>
             </div>
@@ -41,7 +48,7 @@
 
     <main class="max-w-5xl mx-auto px-4 py-6 space-y-6">
         
-        <!-- Bússola do Ciclo de Estudos (Novo) -->
+        <!-- Bússola do Ciclo de Estudos -->
         <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl shadow-md p-5 border border-slate-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
                 <p class="text-blue-400 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5">
@@ -54,36 +61,23 @@
             </button>
         </div>
 
-        <!-- Dashboard / KPIs -->
+        <!-- Dashboard / KPIs Globais -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                <p class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Questões</p>
+                <p class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Questões Globais</p>
                 <p id="kpi-total" class="text-2xl font-bold text-slate-800">0</p>
             </div>
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                <p class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Acerto Geral</p>
+                <p class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Acerto Global</p>
                 <p id="kpi-percent" class="text-2xl font-bold text-blue-600">0%</p>
             </div>
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                <p class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Domínio (Ciclo 3)</p>
-                <p id="kpi-ciclo3" class="text-2xl font-bold text-green-600">0</p>
+                <p class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Assuntos na C3</p>
+                <p id="kpi-c3" class="text-2xl font-bold text-green-600">0</p>
             </div>
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                <p class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Alerta (< 60%)</p>
+                <p class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Avisos de Atenção</p>
                 <p id="kpi-alerta" class="text-2xl font-bold text-red-600">0</p>
-            </div>
-        </div>
-
-        <!-- O Que Preciso Melhorar (Prioridades) -->
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="bg-slate-50 px-5 py-4 border-b border-slate-200 flex items-center gap-2">
-                <i data-lucide="target" class="w-5 h-5 text-red-500"></i>
-                <h2 class="font-semibold text-slate-800">O que preciso melhorar (Prioridades)</h2>
-            </div>
-            <div class="p-5">
-                <div id="lista-prioridades" class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <!-- Preenchido via JS -->
-                </div>
             </div>
         </div>
 
@@ -101,37 +95,77 @@
 
     </main>
 
-    <!-- Modal Lançar/Editar Questões -->
-    <div id="modal-questoes" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+    <!-- Modal Lançar Bateria (Nova Interface) -->
+    <div id="modal-questoes" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden my-auto">
             <div class="bg-slate-50 px-5 py-4 border-b border-slate-100 flex justify-between items-center">
-                <h3 class="font-bold text-slate-800" id="modal-titulo">Lançar Questões</h3>
+                <h3 class="font-bold text-slate-800">Nova Bateria (Aferição)</h3>
                 <button onclick="fecharModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             <div class="p-5 space-y-4">
                 <input type="hidden" id="modal-disc-id">
                 <input type="hidden" id="modal-assunto-id">
-                <input type="hidden" id="modal-modo-edicao" value="false">
                 
-                <p id="modal-assunto-nome" class="text-sm font-medium text-slate-600 bg-slate-100 p-2 rounded text-center"></p>
+                <div class="bg-blue-50/50 border border-blue-100 p-3 rounded-lg text-center">
+                    <p id="modal-assunto-nome" class="text-sm font-bold text-slate-700"></p>
+                    <p id="modal-assunto-camada" class="text-[11px] font-semibold text-blue-600 uppercase mt-1"></p>
+                </div>
                 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1" id="label-feitas">Questões Feitas</label>
-                        <input type="number" id="input-feitas" min="0" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-lg p-3 text-lg font-bold text-center focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Questões Feitas</label>
+                        <input type="number" id="input-feitas" min="1" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-lg p-3 text-lg font-bold text-center focus:ring-2 focus:ring-blue-500 focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1" id="label-erros">Quantas Errou?</label>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Quantas Errou?</label>
                         <input type="number" id="input-erros" min="0" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-lg p-3 text-lg font-bold text-center focus:ring-2 focus:ring-red-500 focus:outline-none">
                     </div>
                 </div>
-                <p id="modal-aviso-edicao" class="hidden text-xs text-orange-600 bg-orange-50 p-2 rounded text-center font-medium border border-orange-200">
-                    Modo Edição: Os valores acima irão substituir o total atual.
-                </p>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Observação (Opcional)</label>
+                    <input type="text" id="input-obs" placeholder="Ex: Dificuldade em prazos, pegadinhas..." class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
             </div>
             <div class="p-5 bg-slate-50 border-t border-slate-100 flex gap-3">
                 <button onclick="fecharModal()" class="flex-1 bg-white border border-slate-300 text-slate-700 py-3 rounded-lg font-medium text-sm">Cancelar</button>
-                <button onclick="salvarQuestoes()" id="btn-salvar-modal" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium text-sm transition">Salvar e Somar</button>
+                <button onclick="salvarBateria()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium text-sm transition">Salvar Aferição</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Histórico do Assunto -->
+    <div id="modal-historico" class="fixed inset-0 bg-slate-900/60 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="bg-slate-50 px-5 py-4 border-b border-slate-200 flex justify-between items-center shrink-0">
+                <div>
+                    <h3 class="font-bold text-slate-800 text-lg">Histórico de Evolução</h3>
+                    <p id="hist-assunto-nome" class="text-xs text-slate-500 mt-0.5"></p>
+                </div>
+                <button onclick="fecharModalHistorico()" class="text-slate-400 hover:text-slate-600 p-1"><i data-lucide="x" class="w-6 h-6"></i></button>
+            </div>
+            
+            <div class="p-5 flex-1 overflow-y-auto bg-slate-50/50">
+                <!-- Resumo -->
+                <div class="grid grid-cols-3 gap-3 mb-6">
+                    <div class="bg-white p-3 rounded border border-slate-200 text-center shadow-sm">
+                        <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Total Questões</p>
+                        <p id="hist-total-q" class="text-lg font-bold text-slate-800">0</p>
+                    </div>
+                    <div class="bg-white p-3 rounded border border-slate-200 text-center shadow-sm">
+                        <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Desempenho Geral</p>
+                        <p id="hist-geral-perc" class="text-lg font-bold text-blue-600">0%</p>
+                    </div>
+                    <div class="bg-white p-3 rounded border border-slate-200 text-center shadow-sm">
+                        <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Camada Atual</p>
+                        <p id="hist-camada-atual" class="text-lg font-bold text-slate-800">1</p>
+                    </div>
+                </div>
+
+                <!-- Timeline de Baterias -->
+                <h4 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2"><i data-lucide="history" class="w-4 h-4"></i> Baterias Realizadas</h4>
+                <div id="lista-baterias" class="space-y-3">
+                    <!-- Preenchido via JS -->
+                </div>
             </div>
         </div>
     </div>
@@ -156,7 +190,54 @@
         let disciplinasAbertas = new Set();
         let unsubscribe = null;
 
-        // Gestão de ID
+        // --- SISTEMA DE MIGRAÇÃO SEGURA (Acumulado antigo -> Novo Histórico) ---
+        function garantirEstrutura(dados) {
+            if(!dados.disciplinas) return dados;
+            dados.disciplinas.forEach(disc => {
+                disc.assuntos.forEach(assunto => {
+                    // Se não tiver camada definida, inicia o processo de migração do acumulado para o formato Baterias
+                    if (assunto.camadaAtual === undefined) {
+                        if (!assunto.historico) assunto.historico = [];
+                        
+                        if (assunto.feitas > 0) {
+                            const acertos = assunto.feitas - assunto.erros;
+                            const percLegado = Math.round((acertos / assunto.feitas) * 100);
+                            
+                            // Define a camada inicial justa baseada no legado (Se bateu a meta, avança)
+                            let camadaInicial = 1;
+                            if (percLegado >= 75) camadaInicial = 2; // Bateu a meta da C1
+                            if (percLegado >= 85) camadaInicial = 3; // Bateu a meta da C2
+
+                            assunto.camadaAtual = camadaInicial;
+                            let msgMigracao = "Migração: Continue aferindo.";
+                            if (camadaInicial === 3 && percLegado > 90) msgMigracao = "Camada 3 concluída com sucesso.";
+
+                            assunto.proximaAcao = { status: 'neutro', msg: msgMigracao };
+
+                            assunto.historico.push({
+                                id: "legacy_" + Date.now(),
+                                data: assunto.ultimaAtualizacao || new Date().toISOString(),
+                                camadaAplicada: 1,
+                                feitas: assunto.feitas,
+                                erros: assunto.erros,
+                                acertos: acertos,
+                                perc: percLegado,
+                                obs: "Migração do histórico acumulado anterior",
+                                msgAcao: "Importação concluída"
+                            });
+                        } else {
+                            // Assunto virgem
+                            assunto.camadaAtual = 1;
+                            assunto.proximaAcao = { status: 'neutro', msg: "Aguardando primeira aferição." };
+                            assunto.historico = [];
+                        }
+                    }
+                });
+            });
+            return dados;
+        }
+
+        // --- GESTÃO DE ID E CLOUD ---
         let userId = localStorage.getItem('estudei_tablet_id');
         if (!userId) {
             userId = 'user_' + Math.random().toString(36).substr(2, 6).toUpperCase();
@@ -165,7 +246,7 @@
         document.getElementById('display-user-id').innerText = userId;
 
         window.gerenciarID = () => {
-            const novoID = prompt(`O seu Código de Acesso atual é: ${userId}\n\nSe deseja importar dados de outro dispositivo, digite o código dele abaixo:`, userId);
+            const novoID = prompt(`O seu Código de Acesso atual é: ${userId}\nSe deseja importar dados, digite o código abaixo:`, userId);
             if (novoID && novoID.trim() !== "" && novoID !== userId) {
                 userId = novoID.trim();
                 localStorage.setItem('estudei_tablet_id', userId);
@@ -174,6 +255,17 @@
                 atualizarTela();
                 iniciarFirebase(); 
             }
+        };
+
+        window.exportarBackup = () => {
+            const data = JSON.stringify(dadosLocais, null, 2);
+            const blob = new Blob([data], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `backup_estudei_${userId}_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
         };
 
         function iniciarFirebase() {
@@ -185,45 +277,46 @@
                 if(unsubscribe) unsubscribe(); 
                 
                 docRef = doc(db, "dados_estudo", userId);
-                mostrarStatus(false, "A ligar...");
+                mostrarStatus(false);
                 
                 unsubscribe = onSnapshot(docRef, (docSnap) => {
                     if (docSnap.exists()) {
-                        dadosLocais = docSnap.data();
-                        if (dadosLocais.cicloIndex === undefined) dadosLocais.cicloIndex = 0; // fallback segurança
+                        let data = docSnap.data();
+                        dadosLocais = garantirEstrutura(data);
+                        if (dadosLocais.cicloIndex === undefined) dadosLocais.cicloIndex = 0;
                         atualizarTela();
-                        mostrarStatus(true, "Sincronizado");
+                        mostrarStatus(true);
                     } else {
                         salvarNaNuvem(dadosLocais);
                     }
                 }, (error) => {
                     console.error("Erro Firebase:", error);
-                    mostrarStatus(false, "Offline (Local)");
+                    mostrarStatus(false);
                     carregarLocal();
                 });
             } catch (error) {
-                mostrarStatus(false, "Offline (Local)");
+                mostrarStatus(false);
                 carregarLocal();
             }
         }
         
         iniciarFirebase();
 
-        function mostrarStatus(online, texto) {
+        function mostrarStatus(online) {
             const statusEl = document.getElementById('cloud-status');
             if(online) {
-                statusEl.innerHTML = `<i data-lucide="cloud-check" class="w-3 h-3 text-green-400"></i> ${texto}`;
-                statusEl.className = "flex items-center gap-2 text-[11px] font-medium px-2 py-0.5 rounded bg-green-900/30 text-green-100 border border-green-800/50";
+                statusEl.innerHTML = `<i data-lucide="cloud-check" class="w-3 h-3 text-green-400"></i>`;
+                statusEl.className = "flex items-center gap-2 text-[11px] font-medium px-2 py-1 rounded bg-green-900/30 border border-green-800/50";
             } else {
-                statusEl.innerHTML = `<i data-lucide="cloud-off" class="w-3 h-3 text-slate-400"></i> ${texto}`;
-                statusEl.className = "flex items-center gap-2 text-[11px] font-medium px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700";
+                statusEl.innerHTML = `<i data-lucide="cloud-off" class="w-3 h-3 text-slate-400"></i>`;
+                statusEl.className = "flex items-center gap-2 text-[11px] font-medium px-2 py-1 rounded bg-slate-800 border border-slate-700";
             }
             lucide.createIcons();
         }
 
         function carregarLocal() {
             const salvo = localStorage.getItem(`estudei_dados_${userId}`);
-            if (salvo) dadosLocais = JSON.parse(salvo);
+            if (salvo) dadosLocais = garantirEstrutura(JSON.parse(salvo));
             if (dadosLocais.cicloIndex === undefined) dadosLocais.cicloIndex = 0;
             atualizarTela();
         }
@@ -240,21 +333,66 @@
             await setDoc(docRef, dados);
         }
 
-        function calcularCamada(perc) {
-            if (perc < 60) return { classe: 'layer-alert', selo: '🔴 Alerta', cor: 'text-red-600' };
-            if (perc < 75) return { classe: 'layer-1', selo: '🟡 Ciclo 1', cor: 'text-yellow-600' };
-            if (perc < 90) return { classe: 'layer-2', selo: '🔵 Ciclo 2', cor: 'text-blue-600' };
-            return { classe: 'layer-3', selo: '🟢 Ciclo 3', cor: 'text-green-600' };
+        // --- LÓGICA DO MÉTODO CAMADAS PRO ---
+        
+        function getMetaText(camada) {
+            if(camada === 1) return "75%";
+            if(camada === 2) return "85%";
+            if(camada === 3) return ">90%";
+            return "75%";
         }
 
-        // --- Funções de Ciclo ---
+        function avaliarProgresso(assunto, percentualBateria) {
+            let metaVal, atingiuMeta, limiteAlerta;
+            
+            // Regras Estritas das Camadas
+            if (assunto.camadaAtual === 1) {
+                metaVal = 75;
+                atingiuMeta = percentualBateria >= 75;
+                limiteAlerta = 65;
+            } else if (assunto.camadaAtual === 2) {
+                metaVal = 85;
+                atingiuMeta = percentualBateria >= 85;
+                limiteAlerta = 75;
+            } else {
+                metaVal = 90;
+                atingiuMeta = percentualBateria > 90; // Exigência: Superior a 90%
+                limiteAlerta = 80;
+            }
+
+            let status = 'neutro';
+            let msgAcao = "";
+            let avancou = false;
+
+            // Motor de Estados de Próxima Ação
+            if (atingiuMeta) {
+                if (assunto.camadaAtual < 3) {
+                    msgAcao = `Meta atingida! Avançou para a Camada ${assunto.camadaAtual + 1}.`;
+                    status = 'sucesso';
+                    avancou = true;
+                } else {
+                    msgAcao = `Camada 3 concluída com excelência (>90%).`;
+                    status = 'sucesso';
+                }
+            } else if (percentualBateria <= limiteAlerta) {
+                msgAcao = `Atenção: Queda de desempenho. Meta era ${getMetaText(assunto.camadaAtual)}.`;
+                status = 'alerta'; // Gera alerta, mas não retrocede a camadaAtual
+            } else {
+                msgAcao = `Continuar na Camada ${assunto.camadaAtual}. Meta é ${getMetaText(assunto.camadaAtual)}.`;
+                status = 'neutro';
+            }
+
+            return { avancou, status, msgAcao };
+        }
+
+        // --- INTERFACE E MODAIS ---
+
         window.girarCiclo = () => {
             if (!dadosLocais.disciplinas || dadosLocais.disciplinas.length === 0) return;
             dadosLocais.cicloIndex = (dadosLocais.cicloIndex + 1) % dadosLocais.disciplinas.length;
             salvarDados();
         };
 
-        // --- Funções de Interface ---
         window.toggleDisciplina = (id) => {
             if (disciplinasAbertas.has(id)) disciplinasAbertas.delete(id);
             else disciplinasAbertas.add(id);
@@ -272,10 +410,9 @@
 
         window.excluirDisciplina = (id, event) => {
             event.stopPropagation();
-            if(confirm("Excluir esta disciplina e todos os assuntos?")) {
+            if(confirm("Excluir esta disciplina e todo o seu histórico de camadas?")) {
                 dadosLocais.disciplinas = dadosLocais.disciplinas.filter(d => d.id !== id);
                 disciplinasAbertas.delete(id);
-                // Ajusta índice do ciclo se necessário
                 if(dadosLocais.cicloIndex >= dadosLocais.disciplinas.length) dadosLocais.cicloIndex = 0;
                 salvarDados();
             }
@@ -289,40 +426,26 @@
             disc.assuntos.push({ 
                 id: Date.now().toString(), 
                 nome, 
-                feitas: 0, 
-                erros: 0,
-                ultimaAtualizacao: null
+                camadaAtual: 1,
+                proximaAcao: { status: 'neutro', msg: "Aguardando primeira aferição." },
+                historico: []
             });
             disciplinasAbertas.add(discId);
             salvarDados();
         };
 
-        window.abrirModalQuestoes = (discId, assuntoId, nomeAssunto, modoEdicao = false) => {
+        // Modais de Bateria
+        window.abrirModalQuestoes = (discId, assuntoId, nomeAssunto, camadaAtual) => {
             document.getElementById('modal-disc-id').value = discId;
             document.getElementById('modal-assunto-id').value = assuntoId;
-            document.getElementById('modal-modo-edicao').value = modoEdicao;
             document.getElementById('modal-assunto-nome').innerText = nomeAssunto;
             
-            const disc = dadosLocais.disciplinas.find(d => d.id === discId);
-            const assunto = disc.assuntos.find(a => a.id === assuntoId);
-
-            if(modoEdicao) {
-                document.getElementById('modal-titulo').innerText = "Corrigir Totais";
-                document.getElementById('label-feitas').innerText = "Total Histórico (Feitas)";
-                document.getElementById('label-erros').innerText = "Total Histórico (Erros)";
-                document.getElementById('input-feitas').value = assunto.feitas;
-                document.getElementById('input-erros').value = assunto.erros;
-                document.getElementById('btn-salvar-modal').innerText = "Atualizar Valores";
-                document.getElementById('modal-aviso-edicao').classList.remove('hidden');
-            } else {
-                document.getElementById('modal-titulo').innerText = "Lançar Nova Bateria";
-                document.getElementById('label-feitas').innerText = "Questões Feitas Agora";
-                document.getElementById('label-erros').innerText = "Quantas Errou Agora?";
-                document.getElementById('input-feitas').value = '';
-                document.getElementById('input-erros').value = '';
-                document.getElementById('btn-salvar-modal').innerText = "Salvar e Somar";
-                document.getElementById('modal-aviso-edicao').classList.add('hidden');
-            }
+            const metaTxt = getMetaText(camadaAtual);
+            document.getElementById('modal-assunto-camada').innerText = `Camada Atual: ${camadaAtual} (Meta: ${metaTxt})`;
+            
+            document.getElementById('input-feitas').value = '';
+            document.getElementById('input-erros').value = '';
+            document.getElementById('input-obs').value = '';
             
             document.getElementById('modal-questoes').classList.remove('hidden');
         };
@@ -331,15 +454,15 @@
             document.getElementById('modal-questoes').classList.add('hidden');
         };
 
-        window.salvarQuestoes = () => {
+        window.salvarBateria = () => {
             const discId = document.getElementById('modal-disc-id').value;
             const assuntoId = document.getElementById('modal-assunto-id').value;
-            const isEdicao = document.getElementById('modal-modo-edicao').value === "true";
             
-            const feitas = parseInt(document.getElementById('input-feitas').value) || 0;
-            const erros = parseInt(document.getElementById('input-erros').value) || 0;
+            const feitas = parseInt(document.getElementById('input-feitas').value);
+            const erros = parseInt(document.getElementById('input-erros').value);
+            const obs = document.getElementById('input-obs').value.trim();
 
-            if (erros > feitas || (!isEdicao && feitas <= 0)) {
+            if (isNaN(feitas) || isNaN(erros) || feitas <= 0 || erros > feitas) {
                 alert("Valores inválidos. Os erros não podem ser maiores que as feitas.");
                 return;
             }
@@ -347,26 +470,101 @@
             const disc = dadosLocais.disciplinas.find(d => d.id === discId);
             const assunto = disc.assuntos.find(a => a.id === assuntoId);
 
-            if(isEdicao) {
-                assunto.feitas = feitas;
-                assunto.erros = erros;
-            } else {
-                assunto.feitas += feitas;
-                assunto.erros += erros;
-                assunto.ultimaAtualizacao = new Date().toISOString(); // Grava a data automaticamente
+            const acertos = feitas - erros;
+            // Cálculo real para lógica matemática e cálculo arredondado para UI
+            const percentualReal = (acertos / feitas) * 100;
+            const percVisual = Math.round(percentualReal); 
+
+            // Avalia as regras do Método
+            const avaliacao = avaliarProgresso(assunto, percentualReal);
+            const camadaNoMomento = assunto.camadaAtual;
+
+            // Grava a Bateria Isolada (Histórico Append-only)
+            assunto.historico.push({
+                id: Date.now().toString(),
+                data: new Date().toISOString(),
+                camadaAplicada: camadaNoMomento,
+                feitas: feitas,
+                erros: erros,
+                acertos: acertos,
+                perc: percVisual,
+                obs: obs,
+                msgAcao: avaliacao.msgAcao
+            });
+
+            // Executa a transição de estado da Próxima Ação
+            if (avaliacao.avancou) {
+                assunto.camadaAtual += 1;
             }
+            assunto.proximaAcao = { status: avaliacao.status, msg: avaliacao.msgAcao };
             
             fecharModal();
             salvarDados();
         };
 
+        // Modal de Histórico
+        window.abrirModalHistorico = (discId, assuntoId) => {
+            const disc = dadosLocais.disciplinas.find(d => d.id === discId);
+            const assunto = disc.assuntos.find(a => a.id === assuntoId);
+            
+            document.getElementById('hist-assunto-nome').innerText = `${disc.nome} > ${assunto.nome}`;
+            document.getElementById('hist-camada-atual').innerText = assunto.camadaAtual;
+
+            let totalFeitas = 0, totalErros = 0;
+            const listaHTML = document.getElementById('lista-baterias');
+            listaHTML.innerHTML = '';
+
+            if (assunto.historico && assunto.historico.length > 0) {
+                // Inverte para ver do mais recente para o mais antigo
+                [...assunto.historico].reverse().forEach(bat => {
+                    totalFeitas += bat.feitas;
+                    totalErros += bat.erros;
+                    const dataFormatada = new Date(bat.data).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+                    
+                    listaHTML.innerHTML += `
+                        <div class="bg-white border border-slate-200 rounded p-4 shadow-sm text-sm">
+                            <div class="flex justify-between items-start mb-2 border-b border-slate-100 pb-2">
+                                <div>
+                                    <span class="font-bold text-slate-800">Camada ${bat.camadaAplicada}</span>
+                                    <span class="text-[10px] text-slate-400 ml-2">${dataFormatada}</span>
+                                </div>
+                                <span class="font-bold text-blue-600 text-base">${bat.perc}%</span>
+                            </div>
+                            <div class="flex flex-wrap gap-4 text-xs text-slate-600 mb-2">
+                                <span>Total: <b>${bat.feitas}</b></span>
+                                <span>Acertos: <b>${bat.acertos}</b></span>
+                                <span>Erros: <b>${bat.erros}</b></span>
+                            </div>
+                            <p class="text-[11px] font-medium text-slate-700 bg-slate-50 p-1.5 rounded">${bat.msgAcao}</p>
+                            ${bat.obs ? `<p class="text-[11px] text-slate-500 italic mt-1.5 flex gap-1"><i data-lucide="message-square" class="w-3 h-3"></i> ${bat.obs}</p>` : ''}
+                        </div>
+                    `;
+                });
+            } else {
+                listaHTML.innerHTML = `<p class="text-sm text-slate-400 text-center p-4">Nenhuma aferição registrada.</p>`;
+            }
+
+            const totalAcertos = totalFeitas - totalErros;
+            const percGeral = totalFeitas > 0 ? Math.round((totalAcertos / totalFeitas) * 100) : 0;
+            
+            document.getElementById('hist-total-q').innerText = totalFeitas;
+            document.getElementById('hist-geral-perc').innerText = percGeral + '%';
+
+            document.getElementById('modal-historico').classList.remove('hidden');
+            lucide.createIcons();
+        };
+
+        window.fecharModalHistorico = () => {
+            document.getElementById('modal-historico').classList.add('hidden');
+        };
+
+        // --- RENDERIZAÇÃO DA INTERFACE ---
         function atualizarTela() {
-            let totalFeitas = 0, totalErros = 0, qtsCiclo3 = 0, qtsAlerta = 0;
-            let todosAssuntos = [];
+            let kpiFeitasGlobais = 0, kpiErrosGlobais = 0, kpiC3 = 0, kpiAvisos = 0;
             const listaHTML = document.getElementById('lista-disciplinas');
             listaHTML.innerHTML = '';
 
-            // Atualiza Ciclo Visual
+            // Bússola do Ciclo Independente
             if (!dadosLocais.disciplinas || dadosLocais.disciplinas.length === 0) {
                 document.getElementById('ciclo-nome-atual').innerText = "Adicione disciplinas...";
             } else {
@@ -374,116 +572,103 @@
                 document.getElementById('ciclo-nome-atual').innerText = dadosLocais.disciplinas[dadosLocais.cicloIndex].nome;
             }
 
-            // Loop de Disciplinas
+            // Loop Renderização
             (dadosLocais.disciplinas || []).forEach(disc => {
                 let htmlAssuntos = '';
-                let discFeitas = 0;
-                let discErros = 0;
                 
                 disc.assuntos.forEach(assunto => {
-                    discFeitas += assunto.feitas;
-                    discErros += assunto.erros;
-                    totalFeitas += assunto.feitas;
-                    totalErros += assunto.erros;
-                    
-                    const acertos = assunto.feitas - assunto.erros;
-                    const perc = assunto.feitas > 0 ? Math.round((acertos / assunto.feitas) * 100) : 0;
-                    const camada = calcularCamada(perc);
-
-                    if(assunto.feitas > 0) {
-                        todosAssuntos.push({ ...assunto, discNome: disc.nome, perc, camada });
-                        if(perc >= 90) qtsCiclo3++;
-                        if(perc < 60) qtsAlerta++;
+                    // Recalcula totais globais varrendo as baterias do histórico
+                    let aFeitas = 0, aErros = 0, ultimaData = null;
+                    if(assunto.historico && assunto.historico.length > 0) {
+                        assunto.historico.forEach(h => {
+                            aFeitas += h.feitas;
+                            aErros += h.erros;
+                        });
+                        ultimaData = assunto.historico[assunto.historico.length-1].data;
                     }
 
-                    // Calcula o tempo desde a última resolução
-                    let tempoTag = `<span class="text-slate-400">Nunca resolvido</span>`;
-                    if (assunto.ultimaAtualizacao) {
-                        const dias = Math.floor((new Date() - new Date(assunto.ultimaAtualizacao)) / (1000 * 60 * 60 * 24));
-                        if (dias === 0) tempoTag = `<span class="text-green-600 font-medium">Resolvido hoje</span>`;
-                        else if (dias === 1) tempoTag = `<span class="text-slate-500">Ontem</span>`;
-                        else if (dias > 7) tempoTag = `<span class="text-orange-500 font-bold flex items-center gap-1"><i data-lucide="alert-circle" class="w-3 h-3"></i> Há ${dias} dias (Revisar)</span>`;
-                        else tempoTag = `<span class="text-slate-500">Há ${dias} dias</span>`;
+                    kpiFeitasGlobais += aFeitas;
+                    kpiErrosGlobais += aErros;
+                    if(assunto.camadaAtual === 3) kpiC3++;
+                    if(assunto.proximaAcao && assunto.proximaAcao.status === 'alerta') kpiAvisos++;
+
+                    const aAcertos = aFeitas - aErros;
+                    const aPercGlobal = aFeitas > 0 ? Math.round((aAcertos / aFeitas) * 100) : 0;
+                    
+                    let classeCamada = `camada-${assunto.camadaAtual}`;
+                    let txtMetaCamada = getMetaText(assunto.camadaAtual);
+                    let corAcao = assunto.proximaAcao ? `status-${assunto.proximaAcao.status}` : 'status-neutro';
+                    let txtAcao = assunto.proximaAcao ? assunto.proximaAcao.msg : 'Aguardando aferição';
+
+                    let tempoTag = '';
+                    if (ultimaData) {
+                        const dias = Math.floor((new Date() - new Date(ultimaData)) / (1000 * 60 * 60 * 24));
+                        if(dias === 0) tempoTag = ` &bull; <span class="text-green-600">Hoje</span>`;
+                        else if(dias > 7) tempoTag = ` &bull; <span class="text-orange-500 font-bold inline-flex items-center gap-0.5"><i data-lucide="clock" class="w-3 h-3"></i> ${dias}d</span>`;
+                        else tempoTag = ` &bull; <span class="text-slate-400">${dias}d</span>`;
                     }
 
                     htmlAssuntos += `
-                        <div class="flex flex-col md:flex-row md:items-center justify-between p-3 bg-white border border-slate-200 rounded-lg shadow-sm gap-3 hover:border-blue-300 transition-colors">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between p-4 bg-white border border-slate-200 rounded-lg shadow-sm gap-3 hover:border-blue-300 transition-colors">
                             <div class="flex-1">
-                                <div class="flex items-center gap-2 mb-1">
-                                    <span class="text-xs font-bold px-2 py-0.5 rounded-md border ${camada.classe}">${camada.selo}</span>
-                                    <h4 class="font-medium text-slate-800 text-sm leading-tight">${assunto.nome}</h4>
+                                <div class="flex items-center gap-2 mb-1.5">
+                                    <span class="text-xs font-bold px-2 py-0.5 rounded border ${classeCamada}">C${assunto.camadaAtual}</span>
+                                    <h4 class="font-bold text-slate-800 text-sm leading-tight">${assunto.nome}</h4>
                                 </div>
-                                <div class="text-[11px] text-slate-500 mt-1.5 flex flex-wrap items-center gap-2">
-                                    <span>Feitas: <b>${assunto.feitas}</b></span> &bull; 
-                                    <span>Erros: <b class="text-red-600/80">${assunto.erros}</b></span> &bull; 
-                                    <span>Acertos: <b class="text-slate-700">${acertos}</b> <span class="${camada.cor} font-bold ml-1">(${perc}%)</span></span> &bull; 
+                                
+                                <div class="text-[11px] text-slate-500 flex flex-wrap items-center gap-2 mb-1.5 bg-slate-50 p-1.5 rounded inline-block border border-slate-100">
+                                    <span>Meta: <b>${txtMetaCamada}</b></span> &bull; 
+                                    <span>Baterias: <b>${assunto.historico ? assunto.historico.length : 0}</b></span> &bull; 
+                                    <span>Questões Acumuladas: <b>${aFeitas}</b> <span class="font-bold text-slate-700 ml-1">(${aPercGlobal}%)</span></span>
                                     ${tempoTag}
                                 </div>
+                                
+                                <p class="text-xs ${corAcao} flex items-center gap-1.5">
+                                    <i data-lucide="arrow-right-circle" class="w-3.5 h-3.5"></i> ${txtAcao}
+                                </p>
                             </div>
-                            <div class="flex gap-2 shrink-0">
-                                <button onclick="abrirModalQuestoes('${disc.id}', '${assunto.id}', '${assunto.nome.replace(/'/g, "\\'")}', true)" class="text-slate-400 hover:text-orange-500 bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg transition" title="Corrigir valores">
-                                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                            <div class="flex gap-2 shrink-0 self-end md:self-center">
+                                <button onclick="abrirModalHistorico('${disc.id}', '${assunto.id}')" class="text-slate-500 hover:text-blue-600 bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg transition text-xs font-semibold flex items-center gap-1">
+                                    <i data-lucide="history" class="w-4 h-4"></i> Histórico
                                 </button>
-                                <button onclick="abrirModalQuestoes('${disc.id}', '${assunto.id}', '${assunto.nome.replace(/'/g, "\\'")}', false)" class="bg-blue-50 text-blue-700 hover:bg-blue-100 px-4 py-2 rounded-lg text-sm font-semibold border border-blue-200 flex items-center gap-1 transition">
-                                    <i data-lucide="plus" class="w-4 h-4"></i> Questões
+                                <button onclick="abrirModalQuestoes('${disc.id}', '${assunto.id}', '${assunto.nome.replace(/'/g, "\\'")}', ${assunto.camadaAtual})" class="bg-blue-50 text-blue-700 hover:bg-blue-100 px-4 py-2 rounded-lg text-sm font-bold border border-blue-200 flex items-center gap-1 transition shadow-sm">
+                                    <i data-lucide="play" class="w-4 h-4"></i> Aferir
                                 </button>
                             </div>
                         </div>
                     `;
                 });
 
-                const discAcertos = discFeitas - discErros;
-                const discPerc = discFeitas > 0 ? Math.round((discAcertos / discFeitas) * 100) : 0;
                 const estaAberta = disciplinasAbertas.has(disc.id);
                 
                 listaHTML.innerHTML += `
-                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-                        <div class="px-5 py-4 flex flex-col md:flex-row justify-between items-start md:items-center cursor-pointer hover:bg-slate-50 transition" onclick="toggleDisciplina('${disc.id}')">
-                            <div class="flex items-center gap-3 w-full md:w-auto">
+                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mb-4">
+                        <div class="px-5 py-4 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition" onclick="toggleDisciplina('${disc.id}')">
+                            <div class="flex items-center gap-3">
                                 <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 transition-transform ${estaAberta ? 'rotate-180' : ''}"></i>
                                 <div>
                                     <h3 class="font-bold text-slate-800 text-lg">${disc.nome}</h3>
-                                    <p class="text-xs text-slate-500 mt-0.5">${disc.assuntos.length} assuntos &bull; Desempenho geral: <strong class="text-slate-700">${discPerc}%</strong></p>
                                 </div>
                             </div>
-                            <div class="flex gap-2 mt-3 md:mt-0 ml-8 md:ml-0">
+                            <div class="flex gap-2">
                                 <button onclick="adicionarAssunto('${disc.id}', event)" class="text-sm bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300 px-3 py-1.5 rounded-md font-medium"><i data-lucide="plus" class="w-4 h-4 inline"></i> Assunto</button>
-                                <button onclick="excluirDisciplina('${disc.id}', event)" class="text-slate-400 hover:text-red-500 bg-white border border-transparent hover:border-red-100 px-2 py-1.5 rounded-md"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                             </div>
                         </div>
-                        <div class="${estaAberta ? 'block' : 'hidden'} bg-slate-50 border-t border-slate-200 p-4 space-y-2">
+                        <div class="${estaAberta ? 'block' : 'hidden'} bg-slate-50 border-t border-slate-200 p-4 space-y-3">
                             ${htmlAssuntos || '<p class="text-sm text-slate-400 text-center py-2">Sem assuntos cadastrados.</p>'}
                         </div>
                     </div>
                 `;
             });
 
-            // KPIs e Prioridades
-            const totalAcertos = totalFeitas - totalErros;
-            const percGeral = totalFeitas > 0 ? Math.round((totalAcertos / totalFeitas) * 100) : 0;
-            document.getElementById('kpi-total').innerText = totalFeitas;
-            document.getElementById('kpi-percent').innerText = percGeral + '%';
-            document.getElementById('kpi-ciclo3').innerText = qtsCiclo3;
-            document.getElementById('kpi-alerta').innerText = qtsAlerta;
-
-            const prioridades = todosAssuntos.sort((a, b) => a.perc - b.perc).slice(0, 4);
-            const prioHTML = document.getElementById('lista-prioridades');
-            if(prioridades.length === 0) {
-                prioHTML.innerHTML = `<p class="text-sm text-slate-500 col-span-2">Resolva questões para visualizar as prioridades.</p>`;
-            } else {
-                prioHTML.innerHTML = prioridades.map(p => `
-                    <div class="flex justify-between items-center p-3 border border-slate-100 rounded-lg bg-white shadow-sm">
-                        <div class="truncate pr-3">
-                            <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">${p.discNome}</p>
-                            <p class="text-sm font-medium text-slate-800 truncate leading-tight mt-0.5">${p.nome}</p>
-                        </div>
-                        <div class="text-right shrink-0">
-                            <span class="text-sm font-bold ${p.camada.cor}">${p.perc}%</span>
-                            <p class="text-[10px] text-slate-400">${p.camada.selo.split(' ')[1]}</p>
-                        </div>
-                    </div>
-                `).join('');
-            }
+            // Update KPIs
+            const kpiAcertosGlobais = kpiFeitasGlobais - kpiErrosGlobais;
+            const kpiPerc = kpiFeitasGlobais > 0 ? Math.round((kpiAcertosGlobais / kpiFeitasGlobais) * 100) : 0;
+            
+            document.getElementById('kpi-total').innerText = kpiFeitasGlobais;
+            document.getElementById('kpi-percent').innerText = kpiPerc + '%';
+            document.getElementById('kpi-c3').innerText = kpiC3;
+            document.getElementById('kpi-alerta').innerText = kpiAvisos;
 
             lucide.createIcons();
         }
