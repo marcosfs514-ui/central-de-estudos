@@ -3,174 +3,279 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estudei - Método Camadas</title>
+    <title>Estudei - Centro de Preparação</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        
+        /* Paleta de Camadas */
         .camada-1 { background-color: #fef3c7; color: #92400e; border-color: #fbbf24; } 
         .camada-2 { background-color: #e0f2fe; color: #075985; border-color: #38bdf8; } 
         .camada-3 { background-color: #dcfce7; color: #166534; border-color: #4ade80; } 
-        .status-alerta { color: #dc2626; font-weight: 600; }
-        .status-sucesso { color: #16a34a; font-weight: 600; }
-        .status-neutro { color: #64748b; font-weight: 500; }
-        .transition-transform { transition: transform 0.3s ease; }
+        
+        /* Ocultar barra de rolagem (limpeza visual) */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        
+        /* Classes utilitárias de UI */
+        .nav-active { background-color: #eff6ff; color: #2563eb; border-right: 3px solid #2563eb; font-weight: 600; }
+        .nav-item { transition: all 0.2s ease; }
+        .nav-item:hover:not(.nav-active) { background-color: #f8fafc; color: #334155; }
+        .mobile-nav-active { color: #2563eb; font-weight: 600; }
+        
+        /* Transições */
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="text-slate-800">
+<body class="text-slate-800 h-screen flex flex-col md:flex-row overflow-hidden">
 
-    <!-- Header -->
-    <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
-        <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="bg-blue-600 p-2 rounded-lg"><i data-lucide="book-open" class="w-6 h-6 text-white"></i></div>
-                <div>
-                    <h1 class="text-xl font-bold">Estudei</h1>
-                    <p class="text-[10px] text-blue-300 font-medium tracking-wide uppercase">Método Camadas PRO</p>
-                </div>
+    <!-- Sidebar Desktop -->
+    <aside class="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 h-full shadow-sm z-10 shrink-0">
+        <div class="p-6 border-b border-slate-100 flex items-center gap-3">
+            <div class="bg-blue-600 p-2 rounded-lg"><i data-lucide="book-open" class="w-6 h-6 text-white"></i></div>
+            <div>
+                <h1 class="text-xl font-bold text-slate-900 leading-tight">Estudei</h1>
+                <p class="text-[10px] text-slate-500 font-medium tracking-wide uppercase">Método Camadas</p>
             </div>
-            <div class="flex flex-col items-end gap-1">
-                <div class="flex gap-2">
-                    <button onclick="exportarBackup()" class="text-xs flex items-center gap-1 bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded text-slate-300 transition" title="Exportar Backup">
-                        <i data-lucide="download" class="w-3 h-3"></i> Backup
-                    </button>
-                    <div id="cloud-status" class="flex items-center gap-2 text-xs font-medium px-2 py-1 rounded bg-slate-800 border border-slate-700">
-                        <i data-lucide="loader-2" class="w-3 h-3 animate-spin text-blue-400"></i>
-                    </div>
-                </div>
-                <button onclick="gerenciarID()" class="text-[10px] text-slate-400 hover:text-white flex items-center gap-1 bg-slate-800/50 px-2 py-0.5 rounded transition">
-                    ID: <span id="display-user-id" class="font-mono text-blue-300">...</span> <i data-lucide="key" class="w-3 h-3"></i>
+        </div>
+        
+        <div class="px-6 py-4 border-b border-slate-100">
+            <p class="text-xs font-bold text-slate-400 uppercase mb-2">Objetivo Atual</p>
+            <div class="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg p-2 cursor-pointer hover:bg-slate-100 transition" onclick="alert('Fase 5: Troca de Concursos')">
+                <span id="label-objetivo-desktop" class="text-sm font-semibold text-slate-700 truncate">Carregando...</span>
+                <i data-lucide="chevrons-up-down" class="w-4 h-4 text-slate-400"></i>
+            </div>
+        </div>
+
+        <nav class="flex-1 py-4 space-y-1">
+            <button onclick="switchTab('hoje')" id="nav-hoje" class="nav-item nav-active w-full flex items-center gap-3 px-6 py-3 text-sm text-slate-500 text-left">
+                <i data-lucide="sun" class="w-5 h-5"></i> Hoje
+            </button>
+            <button onclick="switchTab('plano')" id="nav-plano" class="nav-item w-full flex items-center gap-3 px-6 py-3 text-sm text-slate-500 text-left">
+                <i data-lucide="calendar" class="w-5 h-5"></i> Meu Plano
+            </button>
+            <button onclick="switchTab('conteudos')" id="nav-conteudos" class="nav-item w-full flex items-center gap-3 px-6 py-3 text-sm text-slate-500 text-left">
+                <i data-lucide="library" class="w-5 h-5"></i> Conteúdos (Camadas)
+            </button>
+            <button onclick="switchTab('revisoes')" id="nav-revisoes" class="nav-item w-full flex items-center gap-3 px-6 py-3 text-sm text-slate-500 text-left">
+                <i data-lucide="repeat" class="w-5 h-5"></i> Revisões RARD
+            </button>
+            <button onclick="switchTab('desempenho')" id="nav-desempenho" class="nav-item w-full flex items-center gap-3 px-6 py-3 text-sm text-slate-500 text-left">
+                <i data-lucide="bar-chart-2" class="w-5 h-5"></i> Desempenho
+            </button>
+        </nav>
+
+        <div class="p-4 border-t border-slate-200 bg-slate-50 space-y-2">
+            <div id="cloud-status" class="flex items-center gap-2 text-xs font-medium px-3 py-2 rounded bg-white border border-slate-200 text-slate-500 shadow-sm">
+                <i data-lucide="loader-2" class="w-3 h-3 animate-spin text-blue-500"></i> Sincronizando...
+            </div>
+            <div class="flex gap-2">
+                <button onclick="exportarBackup()" class="flex-1 text-[11px] font-semibold flex items-center justify-center gap-1 bg-white border border-slate-200 hover:bg-slate-100 py-1.5 rounded text-slate-600 transition" title="Exportar Backup JSON">
+                    <i data-lucide="download" class="w-3 h-3"></i> Salvar
                 </button>
+                <label class="flex-1 text-[11px] font-semibold flex items-center justify-center gap-1 bg-white border border-slate-200 hover:bg-slate-100 py-1.5 rounded text-slate-600 transition cursor-pointer" title="Importar Backup JSON">
+                    <i data-lucide="upload" class="w-3 h-3"></i> Restaurar
+                    <input type="file" accept=".json" class="hidden" onchange="importarBackup(event)">
+                </label>
             </div>
+        </div>
+    </aside>
+
+    <!-- Mobile Header -->
+    <header class="md:hidden flex justify-between items-center bg-white border-b border-slate-200 p-4 shrink-0 z-10 shadow-sm">
+        <div class="flex items-center gap-2">
+            <div class="bg-blue-600 p-1.5 rounded"><i data-lucide="book-open" class="w-4 h-4 text-white"></i></div>
+            <h1 class="text-base font-bold text-slate-900">Estudei</h1>
+        </div>
+        <div class="flex items-center gap-3">
+            <span id="label-objetivo-mobile" class="text-[11px] font-bold bg-slate-100 px-2 py-1 rounded text-slate-600 border border-slate-200 truncate max-w-[100px]">...</span>
+            <div id="cloud-status-mobile"><i data-lucide="loader-2" class="w-4 h-4 animate-spin text-blue-500"></i></div>
         </div>
     </header>
 
-    <main class="max-w-5xl mx-auto px-4 py-6 space-y-6">
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto relative bg-slate-50">
         
-        <!-- Bússola do Ciclo de Estudos -->
-        <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl shadow-md p-5 border border-slate-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-                <p class="text-blue-400 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                    <i data-lucide="compass" class="w-4 h-4"></i> Foco do Ciclo Atual
-                </p>
-                <h2 id="ciclo-nome-atual" class="text-2xl font-bold text-white">Carregando...</h2>
+        <!-- ABA: HOJE -->
+        <section id="tab-hoje" class="tab-content active p-4 md:p-8 max-w-4xl mx-auto space-y-6">
+            <div class="flex items-center gap-3 mb-6">
+                <i data-lucide="sun" class="w-8 h-8 text-blue-600"></i>
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800">O que preciso estudar hoje?</h2>
+                    <p class="text-sm text-slate-500">Seu resumo diário para não perder tempo.</p>
+                </div>
             </div>
-            <button onclick="girarCiclo()" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 transition shadow-lg shrink-0">
-                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Avançar Ciclo
-            </button>
-        </div>
+            
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 text-center text-slate-500 space-y-3">
+                <i data-lucide="construction" class="w-12 h-12 mx-auto text-blue-200"></i>
+                <h3 class="font-bold text-slate-700 text-lg">Fase 4: Dashboard Diário em Construção</h3>
+                <p class="text-sm">Esta área centralizará a sua "Próxima Atividade" do Ciclo e o "Cronômetro de Sessões".<br>Por enquanto, acesse a aba <b>Conteúdos</b> para aferir suas Camadas.</p>
+            </div>
+        </section>
 
-        <!-- Dashboard / KPIs Globais -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                <p class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Questões Globais</p>
-                <p id="kpi-total" class="text-2xl font-bold text-slate-800">0</p>
+        <!-- ABA: MEU PLANO -->
+        <section id="tab-plano" class="tab-content p-4 md:p-8 max-w-4xl mx-auto space-y-6">
+            <div class="flex items-center gap-3 mb-6">
+                <i data-lucide="calendar" class="w-8 h-8 text-blue-600"></i>
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800">Meu Plano</h2>
+                    <p class="text-sm text-slate-500">Ciclo de Estudos e Agenda.</p>
+                </div>
             </div>
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                <p class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Acerto Global</p>
-                <p id="kpi-percent" class="text-2xl font-bold text-blue-600">0%</p>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 text-center text-slate-500">
+                <p>Aqui organizaremos o seu Ciclo Ponderado (Fase 5).</p>
             </div>
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                <p class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Assuntos na C3</p>
-                <p id="kpi-c3" class="text-2xl font-bold text-green-600">0</p>
-            </div>
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                <p class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Avisos de Atenção</p>
-                <p id="kpi-alerta" class="text-2xl font-bold text-red-600">0</p>
-            </div>
-        </div>
+        </section>
 
-        <!-- Disciplinas -->
-        <div class="flex justify-between items-center mt-8 mb-4">
-            <h2 class="text-lg font-bold text-slate-800">As Minhas Disciplinas</h2>
-            <button onclick="adicionarDisciplina()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition shadow-sm">
-                <i data-lucide="plus" class="w-4 h-4"></i> Nova Disciplina
-            </button>
-        </div>
+        <!-- ABA: CONTEÚDOS (O APP ATUAL FICA AQUI) -->
+        <section id="tab-conteudos" class="tab-content p-4 md:p-8 max-w-4xl mx-auto space-y-6">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="library" class="w-8 h-8 text-blue-600"></i>
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800">Estrutura do Edital</h2>
+                        <p class="text-sm text-slate-500">Disciplinas, Assuntos e Aferição de Camadas.</p>
+                    </div>
+                </div>
+                <button onclick="adicionarDisciplina()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition shadow-sm">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Nova Disciplina
+                </button>
+            </div>
 
-        <div id="lista-disciplinas" class="space-y-4">
-            <!-- Preenchido via JS -->
-        </div>
+            <!-- Lista de Disciplinas Migrada -->
+            <div id="lista-disciplinas" class="space-y-4 pb-20 md:pb-0">
+                <!-- Preenchido via JS -->
+            </div>
+        </section>
+
+        <!-- ABA: REVISÕES -->
+        <section id="tab-revisoes" class="tab-content p-4 md:p-8 max-w-4xl mx-auto space-y-6">
+            <div class="flex items-center gap-3 mb-6">
+                <i data-lucide="repeat" class="w-8 h-8 text-blue-600"></i>
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800">Revisões Adaptativas (RARD)</h2>
+                    <p class="text-sm text-slate-500">Esquecimento zero. Foco onde você mais precisa.</p>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 text-center text-slate-500">
+                <h3 class="font-bold text-slate-700 text-lg mb-2">Fase 2: Motor de Revisão</h3>
+                <p class="text-sm">Será implementado o sistema inteligente de agendamento por desempenho, substituindo o engessado 7/15/30.</p>
+            </div>
+        </section>
+
+        <!-- ABA: DESEMPENHO (Antigo topo do app) -->
+        <section id="tab-desempenho" class="tab-content p-4 md:p-8 max-w-4xl mx-auto space-y-6">
+            <div class="flex items-center gap-3 mb-6">
+                <i data-lucide="bar-chart-2" class="w-8 h-8 text-blue-600"></i>
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800">Análise de Desempenho</h2>
+                    <p class="text-sm text-slate-500">Indicadores consolidados do Objetivo Atual.</p>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-center">
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Questões Resolvidas</p>
+                    <p id="kpi-total" class="text-3xl font-bold text-slate-800">0</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-center">
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Acerto Global</p>
+                    <p id="kpi-percent" class="text-3xl font-bold text-blue-600">0%</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-center">
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Assuntos na C3</p>
+                    <p id="kpi-c3" class="text-3xl font-bold text-green-600">0</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-center">
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Avisos de Atenção</p>
+                    <p id="kpi-alerta" class="text-3xl font-bold text-red-600">0</p>
+                </div>
+            </div>
+        </section>
 
     </main>
 
-    <!-- Modal Lançar Bateria (Nova Interface) -->
-    <div id="modal-questoes" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
+    <!-- Mobile Bottom Nav -->
+    <nav class="md:hidden flex items-center justify-around bg-white border-t border-slate-200 pb-safe z-10 shrink-0 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+        <button onclick="switchTab('hoje')" id="mob-hoje" class="flex flex-col items-center p-3 text-slate-400 mobile-nav-active">
+            <i data-lucide="sun" class="w-6 h-6 mb-1"></i><span class="text-[10px]">Hoje</span>
+        </button>
+        <button onclick="switchTab('plano')" id="mob-plano" class="flex flex-col items-center p-3 text-slate-400">
+            <i data-lucide="calendar" class="w-6 h-6 mb-1"></i><span class="text-[10px]">Plano</span>
+        </button>
+        <button onclick="switchTab('conteudos')" id="mob-conteudos" class="flex flex-col items-center p-3 text-slate-400 relative">
+            <div class="absolute -top-3 bg-blue-600 text-white p-2 rounded-full shadow-lg"><i data-lucide="library" class="w-5 h-5"></i></div>
+            <span class="text-[10px] mt-6 font-bold text-blue-600">Conteúdos</span>
+        </button>
+        <button onclick="switchTab('revisoes')" id="mob-revisoes" class="flex flex-col items-center p-3 text-slate-400">
+            <i data-lucide="repeat" class="w-6 h-6 mb-1"></i><span class="text-[10px]">Revisões</span>
+        </button>
+        <button onclick="switchTab('desempenho')" id="mob-desempenho" class="flex flex-col items-center p-3 text-slate-400">
+            <i data-lucide="bar-chart-2" class="w-6 h-6 mb-1"></i><span class="text-[10px]">Análise</span>
+        </button>
+    </nav>
+
+    <!-- MODAIS ORIGINAIS PRESERVADOS (Lançar Bateria e Histórico) -->
+    <!-- Modal Lançar Bateria -->
+    <div id="modal-questoes" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center p-4 z-50 overflow-y-auto">
         <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden my-auto">
-            <div class="bg-slate-50 px-5 py-4 border-b border-slate-100 flex justify-between items-center">
-                <h3 class="font-bold text-slate-800">Nova Bateria (Aferição)</h3>
+            <div class="bg-slate-50 px-5 py-4 border-b border-slate-200 flex justify-between items-center">
+                <h3 class="font-bold text-slate-800">Aferição de Camada</h3>
                 <button onclick="fecharModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             <div class="p-5 space-y-4">
                 <input type="hidden" id="modal-disc-id">
                 <input type="hidden" id="modal-assunto-id">
                 
-                <div class="bg-blue-50/50 border border-blue-100 p-3 rounded-lg text-center">
-                    <p id="modal-assunto-nome" class="text-sm font-bold text-slate-700"></p>
+                <div class="bg-blue-50 border border-blue-100 p-3 rounded-lg text-center">
+                    <p id="modal-assunto-nome" class="text-sm font-bold text-slate-700 leading-tight"></p>
                     <p id="modal-assunto-camada" class="text-[11px] font-semibold text-blue-600 uppercase mt-1"></p>
                 </div>
                 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Questões Feitas</label>
-                        <input type="number" id="input-feitas" min="1" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-lg p-3 text-lg font-bold text-center focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <input type="number" id="input-feitas" min="1" class="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-lg p-3 text-lg font-bold text-center focus:ring-2 focus:ring-blue-500 focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Quantas Errou?</label>
-                        <input type="number" id="input-erros" min="0" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-lg p-3 text-lg font-bold text-center focus:ring-2 focus:ring-red-500 focus:outline-none">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Erros</label>
+                        <input type="number" id="input-erros" min="0" class="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-lg p-3 text-lg font-bold text-center focus:ring-2 focus:ring-red-500 focus:outline-none">
                     </div>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Observação (Opcional)</label>
-                    <input type="text" id="input-obs" placeholder="Ex: Dificuldade em prazos, pegadinhas..." class="w-full bg-slate-50 border border-slate-300 text-slate-700 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <input type="text" id="input-obs" placeholder="Ex: Errei prazo de recurso..." class="w-full bg-slate-50 border border-slate-200 text-slate-700 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
                 </div>
             </div>
-            <div class="p-5 bg-slate-50 border-t border-slate-100 flex gap-3">
-                <button onclick="fecharModal()" class="flex-1 bg-white border border-slate-300 text-slate-700 py-3 rounded-lg font-medium text-sm">Cancelar</button>
-                <button onclick="salvarBateria()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium text-sm transition">Salvar Aferição</button>
+            <div class="p-4 bg-slate-50 border-t border-slate-200 flex gap-3">
+                <button onclick="fecharModal()" class="flex-1 bg-white border border-slate-300 text-slate-700 py-2.5 rounded-lg font-bold text-sm hover:bg-slate-50 transition">Cancelar</button>
+                <button onclick="salvarBateria()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg font-bold text-sm transition shadow-sm">Salvar Aferição</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal Histórico do Assunto -->
-    <div id="modal-historico" class="fixed inset-0 bg-slate-900/60 hidden flex items-center justify-center p-4 z-50">
+    <!-- Modal Histórico -->
+    <div id="modal-historico" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center p-4 z-50">
         <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
             <div class="bg-slate-50 px-5 py-4 border-b border-slate-200 flex justify-between items-center shrink-0">
                 <div>
-                    <h3 class="font-bold text-slate-800 text-lg">Histórico de Evolução</h3>
-                    <p id="hist-assunto-nome" class="text-xs text-slate-500 mt-0.5"></p>
+                    <h3 class="font-bold text-slate-800">Histórico de Baterias</h3>
+                    <p id="hist-assunto-nome" class="text-[11px] font-semibold text-slate-500 uppercase mt-0.5"></p>
                 </div>
-                <button onclick="fecharModalHistorico()" class="text-slate-400 hover:text-slate-600 p-1"><i data-lucide="x" class="w-6 h-6"></i></button>
+                <button onclick="fecharModalHistorico()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
-            
             <div class="p-5 flex-1 overflow-y-auto bg-slate-50/50">
-                <!-- Resumo -->
-                <div class="grid grid-cols-3 gap-3 mb-6">
-                    <div class="bg-white p-3 rounded border border-slate-200 text-center shadow-sm">
-                        <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Total Questões</p>
-                        <p id="hist-total-q" class="text-lg font-bold text-slate-800">0</p>
-                    </div>
-                    <div class="bg-white p-3 rounded border border-slate-200 text-center shadow-sm">
-                        <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Desempenho Geral</p>
-                        <p id="hist-geral-perc" class="text-lg font-bold text-blue-600">0%</p>
-                    </div>
-                    <div class="bg-white p-3 rounded border border-slate-200 text-center shadow-sm">
-                        <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Camada Atual</p>
-                        <p id="hist-camada-atual" class="text-lg font-bold text-slate-800">1</p>
-                    </div>
-                </div>
-
-                <!-- Timeline de Baterias -->
-                <h4 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2"><i data-lucide="history" class="w-4 h-4"></i> Baterias Realizadas</h4>
-                <div id="lista-baterias" class="space-y-3">
-                    <!-- Preenchido via JS -->
-                </div>
+                <div id="lista-baterias" class="space-y-3"></div>
             </div>
         </div>
     </div>
 
-    <!-- Script Principal -->
+    <!-- CORE JAVASCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
@@ -178,95 +283,83 @@
         const firebaseConfig = {
             apiKey: "AIzaSyACBwgANNYIGeZWL14U4v434gfDZUnfouI",
             authDomain: "app-de-estudo-81b2c.firebaseapp.com",
-            projectId: "app-de-estudo-81b2c",
-            storageBucket: "app-de-estudo-81b2c.firebasestorage.app",
-            messagingSenderId: "420622769575",
-            appId: "1:420622769575:web:b0631945d9ed6fe3e86a82"
+            projectId: "app-de-estudo-81b2c"
         };
 
         let db = null;
         let docRef = null;
-        let dadosLocais = { disciplinas: [], cicloIndex: 0 };
-        let disciplinasAbertas = new Set();
         let unsubscribe = null;
+        
+        // ESTRUTURA FASE 1: NOVA BASE DE DADOS HIERÁRQUICA
+        let baseDados = {
+            objetivoAtivo: 'default-obj',
+            objetivos: [],
+            revisoes: [],
+            cadernoErros: [],
+            configuracoes: { metaHoras: 20 }
+        };
+        let disciplinasAbertas = new Set();
 
-        // --- SISTEMA DE MIGRAÇÃO SEGURA (Acumulado antigo -> Novo Histórico) ---
-        function garantirEstrutura(dados) {
-            if(!dados.disciplinas) return dados;
-            dados.disciplinas.forEach(disc => {
-                disc.assuntos.forEach(assunto => {
-                    // Se não tiver camada definida, inicia o processo de migração do acumulado para o formato Baterias
-                    if (assunto.camadaAtual === undefined) {
-                        if (!assunto.historico) assunto.historico = [];
-                        
-                        if (assunto.feitas > 0) {
-                            const acertos = assunto.feitas - assunto.erros;
-                            const percLegado = Math.round((acertos / assunto.feitas) * 100);
-                            
-                            // Define a camada inicial justa baseada no legado (Se bateu a meta, avança)
-                            let camadaInicial = 1;
-                            if (percLegado >= 75) camadaInicial = 2; // Bateu a meta da C1
-                            if (percLegado >= 85) camadaInicial = 3; // Bateu a meta da C2
-
-                            assunto.camadaAtual = camadaInicial;
-                            let msgMigracao = "Migração: Continue aferindo.";
-                            if (camadaInicial === 3 && percLegado > 90) msgMigracao = "Camada 3 concluída com sucesso.";
-
-                            assunto.proximaAcao = { status: 'neutro', msg: msgMigracao };
-
-                            assunto.historico.push({
-                                id: "legacy_" + Date.now(),
-                                data: assunto.ultimaAtualizacao || new Date().toISOString(),
-                                camadaAplicada: 1,
-                                feitas: assunto.feitas,
-                                erros: assunto.erros,
-                                acertos: acertos,
-                                perc: percLegado,
-                                obs: "Migração do histórico acumulado anterior",
-                                msgAcao: "Importação concluída"
-                            });
-                        } else {
-                            // Assunto virgem
-                            assunto.camadaAtual = 1;
-                            assunto.proximaAcao = { status: 'neutro', msg: "Aguardando primeira aferição." };
-                            assunto.historico = [];
-                        }
-                    }
-                });
+        // NAVEGAÇÃO UI (Abas)
+        window.switchTab = (tabName) => {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabName).classList.add('active');
+            
+            // Desktop UI
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('nav-active'));
+            document.getElementById('nav-' + tabName)?.classList.add('nav-active');
+            
+            // Mobile UI
+            ['mob-hoje', 'mob-plano', 'mob-revisoes', 'mob-desempenho'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) { el.classList.remove('mobile-nav-active'); el.classList.add('text-slate-400'); }
             });
-            return dados;
-        }
-
-        // --- GESTÃO DE ID E CLOUD ---
-        let userId = localStorage.getItem('estudei_tablet_id');
-        if (!userId) {
-            userId = 'user_' + Math.random().toString(36).substr(2, 6).toUpperCase();
-            localStorage.setItem('estudei_tablet_id', userId);
-        }
-        document.getElementById('display-user-id').innerText = userId;
-
-        window.gerenciarID = () => {
-            const novoID = prompt(`O seu Código de Acesso atual é: ${userId}\nSe deseja importar dados, digite o código abaixo:`, userId);
-            if (novoID && novoID.trim() !== "" && novoID !== userId) {
-                userId = novoID.trim();
-                localStorage.setItem('estudei_tablet_id', userId);
-                document.getElementById('display-user-id').innerText = userId;
-                dadosLocais = { disciplinas: [], cicloIndex: 0 }; 
-                atualizarTela();
-                iniciarFirebase(); 
+            if(tabName !== 'conteudos') {
+                const mobEl = document.getElementById('mob-' + tabName);
+                if(mobEl) { mobEl.classList.add('mobile-nav-active'); mobEl.classList.remove('text-slate-400'); }
             }
         };
 
-        window.exportarBackup = () => {
-            const data = JSON.stringify(dadosLocais, null, 2);
-            const blob = new Blob([data], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `backup_estudei_${userId}_${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-        };
+        // --- SISTEMA DE MIGRAÇÃO (Evita perda de dados) ---
+        function realizarMigracaoEstrutural(dadosBrutos) {
+            // Se já tem a estrutura de objetivos (nova), apenas retorna
+            if (dadosBrutos.objetivoAtivo && dadosBrutos.objetivos) {
+                return dadosBrutos;
+            }
+            
+            // Se tem a estrutura velha { disciplinas: [...] }
+            console.log("Migração Estrutural Iniciada: Movendo disciplinas para o Objetivo 'Meu Concurso'.");
+            return {
+                objetivoAtivo: 'obj-migrado',
+                objetivos: [{
+                    id: 'obj-migrado',
+                    nome: 'Concurso Atual',
+                    disciplinas: dadosBrutos.disciplinas || [],
+                    cicloIndex: dadosBrutos.cicloIndex || 0
+                }],
+                revisoes: [],
+                cadernoErros: [],
+                configuracoes: { metaHoras: 20 }
+            };
+        }
+
+        // Recupera Objetivo Atual para operações
+        function getObjetivoAtivo() {
+            if (!baseDados.objetivos || baseDados.objetivos.length === 0) {
+                baseDados.objetivos = [{ id: 'default-obj', nome: 'Meu Concurso', disciplinas: [], cicloIndex: 0 }];
+                baseDados.objetivoAtivo = 'default-obj';
+            }
+            let obj = baseDados.objetivos.find(o => o.id === baseDados.objetivoAtivo);
+            if (!obj) {
+                obj = baseDados.objetivos[0];
+                baseDados.objetivoAtivo = obj.id;
+            }
+            return obj;
+        }
+
+        // --- FIREBASE & STORAGE ---
+        let userId = localStorage.getItem('estudei_tablet_id') || ('user_' + Math.random().toString(36).substr(2, 6).toUpperCase());
+        localStorage.setItem('estudei_tablet_id', userId);
 
         function iniciarFirebase() {
             try {
@@ -276,65 +369,81 @@
                 }
                 if(unsubscribe) unsubscribe(); 
                 
-                docRef = doc(db, "dados_estudo", userId);
+                docRef = doc(db, "dados_estudo_pro", userId); // Nova collection p/ evitar conflito de formato velho
                 mostrarStatus(false);
                 
                 unsubscribe = onSnapshot(docRef, (docSnap) => {
                     if (docSnap.exists()) {
-                        let data = docSnap.data();
-                        dadosLocais = garantirEstrutura(data);
-                        if (dadosLocais.cicloIndex === undefined) dadosLocais.cicloIndex = 0;
+                        baseDados = realizarMigracaoEstrutural(docSnap.data());
                         atualizarTela();
                         mostrarStatus(true);
                     } else {
-                        salvarNaNuvem(dadosLocais);
+                        // Tenta recuperar do cache velho local para migrar pra nuvem nova
+                        const velhoCache = localStorage.getItem(`estudei_dados_${userId}`);
+                        if(velhoCache) {
+                            baseDados = realizarMigracaoEstrutural(JSON.parse(velhoCache));
+                        }
+                        salvarNaNuvem();
                     }
                 }, (error) => {
-                    console.error("Erro Firebase:", error);
+                    console.log("Offline", error);
                     mostrarStatus(false);
-                    carregarLocal();
                 });
-            } catch (error) {
-                mostrarStatus(false);
-                carregarLocal();
-            }
+            } catch (error) { mostrarStatus(false); }
         }
         
         iniciarFirebase();
 
         function mostrarStatus(online) {
-            const statusEl = document.getElementById('cloud-status');
-            if(online) {
-                statusEl.innerHTML = `<i data-lucide="cloud-check" class="w-3 h-3 text-green-400"></i>`;
-                statusEl.className = "flex items-center gap-2 text-[11px] font-medium px-2 py-1 rounded bg-green-900/30 border border-green-800/50";
-            } else {
-                statusEl.innerHTML = `<i data-lucide="cloud-off" class="w-3 h-3 text-slate-400"></i>`;
-                statusEl.className = "flex items-center gap-2 text-[11px] font-medium px-2 py-1 rounded bg-slate-800 border border-slate-700";
-            }
+            const statusHtm = online 
+                ? `<i data-lucide="cloud-check" class="w-4 h-4 text-green-500"></i> <span class="hidden md:inline">Sincronizado</span>`
+                : `<i data-lucide="cloud-off" class="w-4 h-4 text-slate-400"></i> <span class="hidden md:inline">Offline</span>`;
+            
+            document.getElementById('cloud-status').innerHTML = statusHtm;
+            const mob = document.getElementById('cloud-status-mobile');
+            if(mob) mob.innerHTML = online ? `<i data-lucide="cloud-check" class="w-4 h-4 text-green-500"></i>` : `<i data-lucide="cloud-off" class="w-4 h-4 text-slate-400"></i>`;
             lucide.createIcons();
         }
 
-        function carregarLocal() {
-            const salvo = localStorage.getItem(`estudei_dados_${userId}`);
-            if (salvo) dadosLocais = garantirEstrutura(JSON.parse(salvo));
-            if (dadosLocais.cicloIndex === undefined) dadosLocais.cicloIndex = 0;
-            atualizarTela();
-        }
-
         async function salvarDados() {
-            localStorage.setItem(`estudei_dados_${userId}`, JSON.stringify(dadosLocais));
-            if (db && docRef) {
-                try { await salvarNaNuvem(dadosLocais); } catch(e) {}
-            }
+            localStorage.setItem(`estudei_dados_pro_${userId}`, JSON.stringify(baseDados));
+            if (db && docRef) { try { await salvarNaNuvem(); } catch(e) {} }
             atualizarTela();
         }
 
-        async function salvarNaNuvem(dados) {
-            await setDoc(docRef, dados);
-        }
+        async function salvarNaNuvem() { await setDoc(docRef, baseDados); }
 
-        // --- LÓGICA DO MÉTODO CAMADAS PRO ---
-        
+        // --- BACKUP E IMPORTAÇÃO (CORRIGIDO) ---
+        window.exportarBackup = () => {
+            const data = JSON.stringify(baseDados, null, 2);
+            const blob = new Blob([data], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `estudei_backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        };
+
+        window.importarBackup = (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if(confirm("ATENÇÃO: A importação substituirá os dados atuais pelo conteúdo do arquivo. Deseja continuar?")) {
+                        baseDados = realizarMigracaoEstrutural(parsed);
+                        await salvarDados();
+                        alert("Backup restaurado com sucesso!");
+                    }
+                } catch(error) { alert("Erro ao ler o arquivo de backup. Formato inválido."); }
+                event.target.value = ''; // Reseta input
+            };
+            reader.readAsText(file);
+        };
+
+        // --- LÓGICA DE CAMADAS PRESENTE NO CÓDIGO ANTERIOR ---
         function getMetaText(camada) {
             if(camada === 1) return "75%";
             if(camada === 2) return "85%";
@@ -344,55 +453,24 @@
 
         function avaliarProgresso(assunto, percentualBateria) {
             let metaVal, atingiuMeta, limiteAlerta;
-            
-            // Regras Estritas das Camadas
-            if (assunto.camadaAtual === 1) {
-                metaVal = 75;
-                atingiuMeta = percentualBateria >= 75;
-                limiteAlerta = 65;
-            } else if (assunto.camadaAtual === 2) {
-                metaVal = 85;
-                atingiuMeta = percentualBateria >= 85;
-                limiteAlerta = 75;
-            } else {
-                metaVal = 90;
-                atingiuMeta = percentualBateria > 90; // Exigência: Superior a 90%
-                limiteAlerta = 80;
-            }
+            if (assunto.camadaAtual === 1) { metaVal = 75; atingiuMeta = percentualBateria >= 75; limiteAlerta = 65; } 
+            else if (assunto.camadaAtual === 2) { metaVal = 85; atingiuMeta = percentualBateria >= 85; limiteAlerta = 75; } 
+            else { metaVal = 90; atingiuMeta = percentualBateria > 90; limiteAlerta = 80; }
 
-            let status = 'neutro';
-            let msgAcao = "";
-            let avancou = false;
+            let status = 'neutro', msgAcao = "", avancou = false;
 
-            // Motor de Estados de Próxima Ação
             if (atingiuMeta) {
-                if (assunto.camadaAtual < 3) {
-                    msgAcao = `Meta atingida! Avançou para a Camada ${assunto.camadaAtual + 1}.`;
-                    status = 'sucesso';
-                    avancou = true;
-                } else {
-                    msgAcao = `Camada 3 concluída com excelência (>90%).`;
-                    status = 'sucesso';
-                }
+                if (assunto.camadaAtual < 3) { msgAcao = `Avançou! Próxima Meta: ${getMetaText(assunto.camadaAtual + 1)}.`; status = 'sucesso'; avancou = true; } 
+                else { msgAcao = `Camada 3 MANTIDA com excelência (>90%).`; status = 'sucesso'; }
             } else if (percentualBateria <= limiteAlerta) {
-                msgAcao = `Atenção: Queda de desempenho. Meta era ${getMetaText(assunto.camadaAtual)}.`;
-                status = 'alerta'; // Gera alerta, mas não retrocede a camadaAtual
+                msgAcao = `ATENÇÃO: Desempenho caiu. Meta: ${getMetaText(assunto.camadaAtual)}.`; status = 'alerta'; 
             } else {
-                msgAcao = `Continuar na Camada ${assunto.camadaAtual}. Meta é ${getMetaText(assunto.camadaAtual)}.`;
-                status = 'neutro';
+                msgAcao = `Manter constância. Meta: ${getMetaText(assunto.camadaAtual)}.`; status = 'neutro';
             }
-
             return { avancou, status, msgAcao };
         }
 
-        // --- INTERFACE E MODAIS ---
-
-        window.girarCiclo = () => {
-            if (!dadosLocais.disciplinas || dadosLocais.disciplinas.length === 0) return;
-            dadosLocais.cicloIndex = (dadosLocais.cicloIndex + 1) % dadosLocais.disciplinas.length;
-            salvarDados();
-        };
-
+        // --- MANIPULAÇÃO DA ABA "CONTEÚDOS" (O core antigo) ---
         window.toggleDisciplina = (id) => {
             if (disciplinasAbertas.has(id)) disciplinasAbertas.delete(id);
             else disciplinasAbertas.add(id);
@@ -400,58 +478,43 @@
         };
 
         window.adicionarDisciplina = () => {
-            const nome = prompt("Nome da Nova Disciplina:");
+            const nome = prompt("Nome da Nova Disciplina (Ex: Dir. Constitucional):");
             if (!nome) return;
-            const novoId = Date.now().toString();
-            dadosLocais.disciplinas.push({ id: novoId, nome, assuntos: [] });
-            disciplinasAbertas.add(novoId);
+            getObjetivoAtivo().disciplinas.push({ id: Date.now().toString(), nome, assuntos: [] });
             salvarDados();
-        };
-
-        window.excluirDisciplina = (id, event) => {
-            event.stopPropagation();
-            if(confirm("Excluir esta disciplina e todo o seu histórico de camadas?")) {
-                dadosLocais.disciplinas = dadosLocais.disciplinas.filter(d => d.id !== id);
-                disciplinasAbertas.delete(id);
-                if(dadosLocais.cicloIndex >= dadosLocais.disciplinas.length) dadosLocais.cicloIndex = 0;
-                salvarDados();
-            }
         };
 
         window.adicionarAssunto = (discId, event) => {
             event.stopPropagation();
-            const nome = prompt("Nome do Assunto:");
+            const nome = prompt("Nome do Assunto (Ex: Direitos Fundamentais):");
             if (!nome) return;
-            const disc = dadosLocais.disciplinas.find(d => d.id === discId);
+            const obj = getObjetivoAtivo();
+            const disc = obj.disciplinas.find(d => d.id === discId);
             disc.assuntos.push({ 
-                id: Date.now().toString(), 
-                nome, 
-                camadaAtual: 1,
-                proximaAcao: { status: 'neutro', msg: "Aguardando primeira aferição." },
-                historico: []
+                id: Date.now().toString(), nome, camadaAtual: 1,
+                proximaAcao: { status: 'neutro', msg: "Aguardando 1ª aferição." }, historico: []
             });
             disciplinasAbertas.add(discId);
             salvarDados();
         };
 
-        // Modais de Bateria
+        // Modais de Aferição
         window.abrirModalQuestoes = (discId, assuntoId, nomeAssunto, camadaAtual) => {
             document.getElementById('modal-disc-id').value = discId;
             document.getElementById('modal-assunto-id').value = assuntoId;
             document.getElementById('modal-assunto-nome').innerText = nomeAssunto;
-            
-            const metaTxt = getMetaText(camadaAtual);
-            document.getElementById('modal-assunto-camada').innerText = `Camada Atual: ${camadaAtual} (Meta: ${metaTxt})`;
-            
+            document.getElementById('modal-assunto-camada').innerText = `Camada ${camadaAtual} (Alvo: ${getMetaText(camadaAtual)})`;
             document.getElementById('input-feitas').value = '';
             document.getElementById('input-erros').value = '';
             document.getElementById('input-obs').value = '';
             
-            document.getElementById('modal-questoes').classList.remove('hidden');
+            const modal = document.getElementById('modal-questoes');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
         };
 
         window.fecharModal = () => {
-            document.getElementById('modal-questoes').classList.add('hidden');
+            const modal = document.getElementById('modal-questoes');
+            modal.classList.add('hidden'); modal.classList.remove('flex');
         };
 
         window.salvarBateria = () => {
@@ -462,177 +525,111 @@
             const erros = parseInt(document.getElementById('input-erros').value);
             const obs = document.getElementById('input-obs').value.trim();
 
-            if (isNaN(feitas) || isNaN(erros) || feitas <= 0 || erros > feitas) {
-                alert("Valores inválidos. Os erros não podem ser maiores que as feitas.");
-                return;
-            }
+            if (isNaN(feitas) || isNaN(erros) || feitas <= 0 || erros > feitas) { alert("Valores inválidos."); return; }
 
-            const disc = dadosLocais.disciplinas.find(d => d.id === discId);
+            const obj = getObjetivoAtivo();
+            const disc = obj.disciplinas.find(d => d.id === discId);
             const assunto = disc.assuntos.find(a => a.id === assuntoId);
 
             const acertos = feitas - erros;
-            // Cálculo real para lógica matemática e cálculo arredondado para UI
             const percentualReal = (acertos / feitas) * 100;
             const percVisual = Math.round(percentualReal); 
 
-            // Avalia as regras do Método
             const avaliacao = avaliarProgresso(assunto, percentualReal);
-            const camadaNoMomento = assunto.camadaAtual;
 
-            // Grava a Bateria Isolada (Histórico Append-only)
             assunto.historico.push({
-                id: Date.now().toString(),
-                data: new Date().toISOString(),
-                camadaAplicada: camadaNoMomento,
-                feitas: feitas,
-                erros: erros,
-                acertos: acertos,
-                perc: percVisual,
-                obs: obs,
-                msgAcao: avaliacao.msgAcao
+                id: Date.now().toString(), data: new Date().toISOString(), camadaAplicada: assunto.camadaAtual,
+                feitas, erros, acertos, perc: percVisual, obs, msgAcao: avaliacao.msgAcao
             });
 
-            // Executa a transição de estado da Próxima Ação
-            if (avaliacao.avancou) {
-                assunto.camadaAtual += 1;
-            }
+            if (avaliacao.avancou) assunto.camadaAtual += 1;
             assunto.proximaAcao = { status: avaliacao.status, msg: avaliacao.msgAcao };
             
-            fecharModal();
-            salvarDados();
+            fecharModal(); salvarDados();
         };
 
-        // Modal de Histórico
+        // Modal Histórico
         window.abrirModalHistorico = (discId, assuntoId) => {
-            const disc = dadosLocais.disciplinas.find(d => d.id === discId);
+            const obj = getObjetivoAtivo();
+            const disc = obj.disciplinas.find(d => d.id === discId);
             const assunto = disc.assuntos.find(a => a.id === assuntoId);
-            
             document.getElementById('hist-assunto-nome').innerText = `${disc.nome} > ${assunto.nome}`;
-            document.getElementById('hist-camada-atual').innerText = assunto.camadaAtual;
-
-            let totalFeitas = 0, totalErros = 0;
+            
             const listaHTML = document.getElementById('lista-baterias');
             listaHTML.innerHTML = '';
 
             if (assunto.historico && assunto.historico.length > 0) {
-                // Inverte para ver do mais recente para o mais antigo
                 [...assunto.historico].reverse().forEach(bat => {
-                    totalFeitas += bat.feitas;
-                    totalErros += bat.erros;
-                    const dataFormatada = new Date(bat.data).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
-                    
+                    const dt = new Date(bat.data).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
                     listaHTML.innerHTML += `
-                        <div class="bg-white border border-slate-200 rounded p-4 shadow-sm text-sm">
-                            <div class="flex justify-between items-start mb-2 border-b border-slate-100 pb-2">
-                                <div>
-                                    <span class="font-bold text-slate-800">Camada ${bat.camadaAplicada}</span>
-                                    <span class="text-[10px] text-slate-400 ml-2">${dataFormatada}</span>
-                                </div>
+                        <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm text-sm">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">C${bat.camadaAplicada} &bull; ${dt}</span>
                                 <span class="font-bold text-blue-600 text-base">${bat.perc}%</span>
                             </div>
-                            <div class="flex flex-wrap gap-4 text-xs text-slate-600 mb-2">
-                                <span>Total: <b>${bat.feitas}</b></span>
-                                <span>Acertos: <b>${bat.acertos}</b></span>
-                                <span>Erros: <b>${bat.erros}</b></span>
+                            <div class="flex gap-4 text-[11px] text-slate-500 mb-2">
+                                <span>Feitas: <b>${bat.feitas}</b></span> <span>Erros: <b class="text-red-500">${bat.erros}</b></span>
                             </div>
-                            <p class="text-[11px] font-medium text-slate-700 bg-slate-50 p-1.5 rounded">${bat.msgAcao}</p>
-                            ${bat.obs ? `<p class="text-[11px] text-slate-500 italic mt-1.5 flex gap-1"><i data-lucide="message-square" class="w-3 h-3"></i> ${bat.obs}</p>` : ''}
+                            <p class="text-[11px] font-medium text-slate-600 bg-slate-50 p-1.5 rounded border border-slate-100">${bat.msgAcao}</p>
                         </div>
                     `;
                 });
-            } else {
-                listaHTML.innerHTML = `<p class="text-sm text-slate-400 text-center p-4">Nenhuma aferição registrada.</p>`;
-            }
+            } else { listaHTML.innerHTML = `<p class="text-sm text-slate-400 text-center py-4">Sem histórico.</p>`; }
 
-            const totalAcertos = totalFeitas - totalErros;
-            const percGeral = totalFeitas > 0 ? Math.round((totalAcertos / totalFeitas) * 100) : 0;
-            
-            document.getElementById('hist-total-q').innerText = totalFeitas;
-            document.getElementById('hist-geral-perc').innerText = percGeral + '%';
-
-            document.getElementById('modal-historico').classList.remove('hidden');
-            lucide.createIcons();
+            const modal = document.getElementById('modal-historico');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
         };
 
         window.fecharModalHistorico = () => {
-            document.getElementById('modal-historico').classList.add('hidden');
+            const modal = document.getElementById('modal-historico');
+            modal.classList.add('hidden'); modal.classList.remove('flex');
         };
 
-        // --- RENDERIZAÇÃO DA INTERFACE ---
+        // --- RENDERIZAR TELA ---
         function atualizarTela() {
-            let kpiFeitasGlobais = 0, kpiErrosGlobais = 0, kpiC3 = 0, kpiAvisos = 0;
+            const objAtivo = getObjetivoAtivo();
+            
+            // Labels de Cabeçalho
+            document.getElementById('label-objetivo-desktop').innerText = objAtivo.nome;
+            document.getElementById('label-objetivo-mobile').innerText = objAtivo.nome;
+
+            let kpiFeitas = 0, kpiErros = 0, kpiC3 = 0, kpiAlertas = 0;
             const listaHTML = document.getElementById('lista-disciplinas');
             listaHTML.innerHTML = '';
 
-            // Bússola do Ciclo Independente
-            if (!dadosLocais.disciplinas || dadosLocais.disciplinas.length === 0) {
-                document.getElementById('ciclo-nome-atual').innerText = "Adicione disciplinas...";
-            } else {
-                if (dadosLocais.cicloIndex >= dadosLocais.disciplinas.length) dadosLocais.cicloIndex = 0;
-                document.getElementById('ciclo-nome-atual').innerText = dadosLocais.disciplinas[dadosLocais.cicloIndex].nome;
-            }
-
-            // Loop Renderização
-            (dadosLocais.disciplinas || []).forEach(disc => {
+            (objAtivo.disciplinas || []).forEach(disc => {
                 let htmlAssuntos = '';
                 
                 disc.assuntos.forEach(assunto => {
-                    // Recalcula totais globais varrendo as baterias do histórico
-                    let aFeitas = 0, aErros = 0, ultimaData = null;
-                    if(assunto.historico && assunto.historico.length > 0) {
-                        assunto.historico.forEach(h => {
-                            aFeitas += h.feitas;
-                            aErros += h.erros;
-                        });
-                        ultimaData = assunto.historico[assunto.historico.length-1].data;
-                    }
+                    let aFeitas = 0, aErros = 0;
+                    if(assunto.historico) { assunto.historico.forEach(h => { aFeitas += h.feitas; aErros += h.erros; }); }
 
-                    kpiFeitasGlobais += aFeitas;
-                    kpiErrosGlobais += aErros;
+                    kpiFeitas += aFeitas; kpiErros += aErros;
                     if(assunto.camadaAtual === 3) kpiC3++;
-                    if(assunto.proximaAcao && assunto.proximaAcao.status === 'alerta') kpiAvisos++;
+                    if(assunto.proximaAcao?.status === 'alerta') kpiAlertas++;
 
-                    const aAcertos = aFeitas - aErros;
-                    const aPercGlobal = aFeitas > 0 ? Math.round((aAcertos / aFeitas) * 100) : 0;
-                    
-                    let classeCamada = `camada-${assunto.camadaAtual}`;
-                    let txtMetaCamada = getMetaText(assunto.camadaAtual);
-                    let corAcao = assunto.proximaAcao ? `status-${assunto.proximaAcao.status}` : 'status-neutro';
-                    let txtAcao = assunto.proximaAcao ? assunto.proximaAcao.msg : 'Aguardando aferição';
-
-                    let tempoTag = '';
-                    if (ultimaData) {
-                        const dias = Math.floor((new Date() - new Date(ultimaData)) / (1000 * 60 * 60 * 24));
-                        if(dias === 0) tempoTag = ` &bull; <span class="text-green-600">Hoje</span>`;
-                        else if(dias > 7) tempoTag = ` &bull; <span class="text-orange-500 font-bold inline-flex items-center gap-0.5"><i data-lucide="clock" class="w-3 h-3"></i> ${dias}d</span>`;
-                        else tempoTag = ` &bull; <span class="text-slate-400">${dias}d</span>`;
-                    }
+                    const aPerc = aFeitas > 0 ? Math.round(((aFeitas - aErros) / aFeitas) * 100) : 0;
+                    const cClasse = `camada-${assunto.camadaAtual || 1}`;
+                    const corAcao = assunto.proximaAcao ? `status-${assunto.proximaAcao.status}` : 'status-neutro';
+                    const sNome = assunto.nome.replace(/'/g, "\\'").replace(/"/g, "&quot;");
 
                     htmlAssuntos += `
-                        <div class="flex flex-col md:flex-row md:items-center justify-between p-4 bg-white border border-slate-200 rounded-lg shadow-sm gap-3 hover:border-blue-300 transition-colors">
-                            <div class="flex-1">
-                                <div class="flex items-center gap-2 mb-1.5">
-                                    <span class="text-xs font-bold px-2 py-0.5 rounded border ${classeCamada}">C${assunto.camadaAtual}</span>
+                        <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm hover:border-blue-300 transition">
+                            <div class="flex justify-between items-start mb-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded border ${cClasse}">C${assunto.camadaAtual||1}</span>
                                     <h4 class="font-bold text-slate-800 text-sm leading-tight">${assunto.nome}</h4>
                                 </div>
-                                
-                                <div class="text-[11px] text-slate-500 flex flex-wrap items-center gap-2 mb-1.5 bg-slate-50 p-1.5 rounded inline-block border border-slate-100">
-                                    <span>Meta: <b>${txtMetaCamada}</b></span> &bull; 
-                                    <span>Baterias: <b>${assunto.historico ? assunto.historico.length : 0}</b></span> &bull; 
-                                    <span>Questões Acumuladas: <b>${aFeitas}</b> <span class="font-bold text-slate-700 ml-1">(${aPercGlobal}%)</span></span>
-                                    ${tempoTag}
-                                </div>
-                                
-                                <p class="text-xs ${corAcao} flex items-center gap-1.5">
-                                    <i data-lucide="arrow-right-circle" class="w-3.5 h-3.5"></i> ${txtAcao}
-                                </p>
+                                <span class="text-[11px] font-bold text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">${aPerc}%</span>
                             </div>
-                            <div class="flex gap-2 shrink-0 self-end md:self-center">
-                                <button onclick="abrirModalHistorico('${disc.id}', '${assunto.id}')" class="text-slate-500 hover:text-blue-600 bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg transition text-xs font-semibold flex items-center gap-1">
-                                    <i data-lucide="history" class="w-4 h-4"></i> Histórico
+                            <p class="text-[11px] ${corAcao} mb-3 flex items-center gap-1"><i data-lucide="activity" class="w-3 h-3"></i> ${assunto.proximaAcao?.msg || 'Sem dados'}</p>
+                            
+                            <div class="flex gap-2">
+                                <button onclick="abrirModalHistorico('${disc.id}', '${assunto.id}')" class="flex-1 bg-slate-50 border border-slate-200 hover:bg-slate-100 py-1.5 rounded-lg text-xs font-semibold text-slate-600 transition">
+                                    Histórico
                                 </button>
-                                <button onclick="abrirModalQuestoes('${disc.id}', '${assunto.id}', '${assunto.nome.replace(/'/g, "\\'")}', ${assunto.camadaAtual})" class="bg-blue-50 text-blue-700 hover:bg-blue-100 px-4 py-2 rounded-lg text-sm font-bold border border-blue-200 flex items-center gap-1 transition shadow-sm">
-                                    <i data-lucide="play" class="w-4 h-4"></i> Aferir
+                                <button onclick="abrirModalQuestoes('${disc.id}', '${assunto.id}', '${sNome}', ${assunto.camadaAtual||1})" class="flex-1 bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-700 py-1.5 rounded-lg text-xs font-bold transition">
+                                    Aferir
                                 </button>
                             </div>
                         </div>
@@ -640,38 +637,34 @@
                 });
 
                 const estaAberta = disciplinasAbertas.has(disc.id);
-                
                 listaHTML.innerHTML += `
-                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mb-4">
-                        <div class="px-5 py-4 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition" onclick="toggleDisciplina('${disc.id}')">
-                            <div class="flex items-center gap-3">
-                                <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 transition-transform ${estaAberta ? 'rotate-180' : ''}"></i>
-                                <div>
-                                    <h3 class="font-bold text-slate-800 text-lg">${disc.nome}</h3>
-                                </div>
+                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm mb-3">
+                        <div class="px-4 py-3 flex justify-between items-center cursor-pointer hover:bg-slate-50" onclick="toggleDisciplina('${disc.id}')">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 transition-transform ${estaAberta ? 'rotate-180' : ''}"></i>
+                                <h3 class="font-bold text-slate-800 text-base">${disc.nome}</h3>
                             </div>
-                            <div class="flex gap-2">
-                                <button onclick="adicionarAssunto('${disc.id}', event)" class="text-sm bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300 px-3 py-1.5 rounded-md font-medium"><i data-lucide="plus" class="w-4 h-4 inline"></i> Assunto</button>
-                            </div>
+                            <button onclick="adicionarAssunto('${disc.id}', event)" class="bg-slate-100 hover:bg-slate-200 text-slate-600 p-1.5 rounded-md transition"><i data-lucide="plus" class="w-4 h-4"></i></button>
                         </div>
-                        <div class="${estaAberta ? 'block' : 'hidden'} bg-slate-50 border-t border-slate-200 p-4 space-y-3">
-                            ${htmlAssuntos || '<p class="text-sm text-slate-400 text-center py-2">Sem assuntos cadastrados.</p>'}
+                        <div class="${estaAberta ? 'grid grid-cols-1 md:grid-cols-2 gap-3' : 'hidden'} bg-slate-50 border-t border-slate-100 p-3">
+                            ${htmlAssuntos || '<p class="text-xs text-slate-400 text-center py-2 col-span-full">Sem assuntos cadastrados.</p>'}
                         </div>
                     </div>
                 `;
             });
 
-            // Update KPIs
-            const kpiAcertosGlobais = kpiFeitasGlobais - kpiErrosGlobais;
-            const kpiPerc = kpiFeitasGlobais > 0 ? Math.round((kpiAcertosGlobais / kpiFeitasGlobais) * 100) : 0;
-            
-            document.getElementById('kpi-total').innerText = kpiFeitasGlobais;
-            document.getElementById('kpi-percent').innerText = kpiPerc + '%';
+            // KPIs Desempenho
+            const kpiPercGeral = kpiFeitas > 0 ? Math.round(((kpiFeitas - kpiErros) / kpiFeitas) * 100) : 0;
+            document.getElementById('kpi-total').innerText = kpiFeitas;
+            document.getElementById('kpi-percent').innerText = kpiPercGeral + '%';
             document.getElementById('kpi-c3').innerText = kpiC3;
-            document.getElementById('kpi-alerta').innerText = kpiAvisos;
+            document.getElementById('kpi-alerta').innerText = kpiAlertas;
 
             lucide.createIcons();
         }
+
+        // Init icons
+        lucide.createIcons();
     </script>
 </body>
 </html>
