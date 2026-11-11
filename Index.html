@@ -51,21 +51,15 @@
         </div>
         
         <div class="px-6 py-4 border-b border-slate-100">
-            <p class="text-xs font-bold text-slate-400 uppercase mb-2">Objetivo Atual</p>
-            <div class="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg p-2 cursor-pointer hover:bg-slate-100 transition" onclick="alert('Fase 5: Troca de Concursos')">
+            <p class="text-xs font-bold text-slate-400 uppercase mb-2">Sessão Atual</p>
+            <div class="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg p-2 cursor-pointer hover:bg-slate-100 transition" onclick="abrirModalSessoes()">
                 <span id="label-objetivo-desktop" class="text-sm font-semibold text-slate-700 truncate">Carregando...</span>
-                <i data-lucide="chevrons-up-down" class="w-4 h-4 text-slate-400"></i>
+                <i data-lucide="settings-2" class="w-4 h-4 text-slate-400"></i>
             </div>
         </div>
 
         <nav class="flex-1 py-4 space-y-1">
-            <button onclick="switchTab('hoje')" id="nav-hoje" class="nav-item nav-active w-full flex items-center gap-3 px-6 py-3 text-sm text-slate-500 text-left">
-                <i data-lucide="sun" class="w-5 h-5"></i> Hoje
-            </button>
-            <button onclick="switchTab('plano')" id="nav-plano" class="nav-item w-full flex items-center gap-3 px-6 py-3 text-sm text-slate-500 text-left">
-                <i data-lucide="calendar" class="w-5 h-5"></i> Meu Plano
-            </button>
-            <button onclick="switchTab('conteudos')" id="nav-conteudos" class="nav-item w-full flex items-center gap-3 px-6 py-3 text-sm text-slate-500 text-left">
+            <button onclick="switchTab('conteudos')" id="nav-conteudos" class="nav-item nav-active w-full flex items-center gap-3 px-6 py-3 text-sm text-slate-500 text-left">
                 <i data-lucide="library" class="w-5 h-5"></i> Conteúdos (Camadas)
             </button>
             <button onclick="switchTab('revisoes')" id="nav-revisoes" class="nav-item w-full flex items-center justify-between px-6 py-3 text-sm text-slate-500 text-left relative">
@@ -100,7 +94,7 @@
             <h1 class="text-base font-bold text-slate-900">Estudei</h1>
         </div>
         <div class="flex items-center gap-3">
-            <span id="label-objetivo-mobile" class="text-[11px] font-bold bg-slate-100 px-2 py-1 rounded text-slate-600 border border-slate-200 truncate max-w-[100px]">...</span>
+            <button onclick="abrirModalSessoes()" id="label-objetivo-mobile" class="text-[11px] font-bold bg-slate-100 px-2 py-1 rounded text-slate-600 border border-slate-200 truncate max-w-[100px] hover:bg-slate-200">...</button>
             <div id="cloud-status-mobile"><i data-lucide="loader-2" class="w-4 h-4 animate-spin text-blue-500"></i></div>
         </div>
     </header>
@@ -108,43 +102,13 @@
     <!-- Main Content Area -->
     <main class="flex-1 overflow-y-auto relative bg-slate-50">
         
-        <!-- ABA: HOJE -->
-        <section id="tab-hoje" class="tab-content active p-4 md:p-8 max-w-4xl mx-auto space-y-6">
-            <div class="flex items-center gap-3 mb-6">
-                <i data-lucide="sun" class="w-8 h-8 text-blue-600"></i>
-                <div>
-                    <h2 class="text-2xl font-bold text-slate-800">O que preciso estudar hoje?</h2>
-                    <p class="text-sm text-slate-500">Seu resumo diário para não perder tempo.</p>
-                </div>
-            </div>
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 text-center text-slate-500">
-                <i data-lucide="construction" class="w-12 h-12 mx-auto text-blue-200 mb-3"></i>
-                <h3 class="font-bold text-slate-700 text-lg">Fase 4: Dashboard Diário em Construção</h3>
-                <p class="text-sm mt-1">Por enquanto, acompanhe suas metas na aba <b>Conteúdos</b> e verifique as <b>Revisões</b>.</p>
-            </div>
-        </section>
-
-        <!-- ABA: MEU PLANO -->
-        <section id="tab-plano" class="tab-content p-4 md:p-8 max-w-4xl mx-auto space-y-6">
-            <div class="flex items-center gap-3 mb-6">
-                <i data-lucide="calendar" class="w-8 h-8 text-blue-600"></i>
-                <div>
-                    <h2 class="text-2xl font-bold text-slate-800">Meu Plano</h2>
-                    <p class="text-sm text-slate-500">Ciclo de Estudos e Agenda.</p>
-                </div>
-            </div>
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 text-center text-slate-500">
-                <p>Aqui organizaremos o seu Ciclo Ponderado (Fase 5).</p>
-            </div>
-        </section>
-
-        <!-- ABA: CONTEÚDOS -->
-        <section id="tab-conteudos" class="tab-content p-4 md:p-8 max-w-4xl mx-auto space-y-6">
+        <!-- ABA: CONTEÚDOS (Principal) -->
+        <section id="tab-conteudos" class="tab-content active p-4 md:p-8 max-w-4xl mx-auto space-y-6">
             <div class="flex items-center justify-between mb-6">
                 <div class="flex items-center gap-3">
                     <i data-lucide="library" class="w-8 h-8 text-blue-600"></i>
                     <div>
-                        <h2 class="text-2xl font-bold text-slate-800">Estrutura do Edital</h2>
+                        <h2 class="text-2xl font-bold text-slate-800">Estrutura de Conteúdos</h2>
                         <p class="text-sm text-slate-500">Disciplinas, Assuntos e Aferição de Camadas.</p>
                     </div>
                 </div>
@@ -167,23 +131,23 @@
                 </div>
             </div>
             
-            <div id="container-revisoes-pendentes" class="space-y-4 pb-20 md:pb-0">
-                <!-- Lista de revisões gerada pelo JS -->
-            </div>
+            <div id="container-revisoes-pendentes" class="space-y-4 pb-20 md:pb-0"></div>
         </section>
 
-        <!-- ABA: DESEMPENHO -->
-        <section id="tab-desempenho" class="tab-content p-4 md:p-8 max-w-4xl mx-auto space-y-6">
+        <!-- ABA: DESEMPENHO (Global + Histórico Detalhado) -->
+        <section id="tab-desempenho" class="tab-content p-4 md:p-8 max-w-4xl mx-auto space-y-6 pb-24 md:pb-8">
             <div class="flex items-center gap-3 mb-6">
                 <i data-lucide="bar-chart-2" class="w-8 h-8 text-blue-600"></i>
                 <div>
                     <h2 class="text-2xl font-bold text-slate-800">Análise de Desempenho</h2>
-                    <p class="text-sm text-slate-500">Indicadores consolidados do Objetivo Atual.</p>
+                    <p class="text-sm text-slate-500">Métricas globais e histórico detalhado por disciplina.</p>
                 </div>
             </div>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            
+            <!-- KPIs Globais -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-center">
-                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Questões Resolvidas</p>
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Questões Globais</p>
                     <p id="kpi-total" class="text-3xl font-bold text-slate-800">0</p>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-center">
@@ -195,23 +159,22 @@
                     <p id="kpi-c3" class="text-3xl font-bold text-green-600">0</p>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-center">
-                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Avisos de Atenção</p>
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Avisos de Alerta</p>
                     <p id="kpi-alerta" class="text-3xl font-bold text-red-600">0</p>
                 </div>
             </div>
+
+            <!-- Desempenho Detalhado por Matéria -->
+            <h3 class="font-bold text-slate-800 text-lg mb-4 border-b border-slate-200 pb-2">Histórico por Matéria e Assunto</h3>
+            <div id="desempenho-detalhado" class="space-y-4"></div>
+            
         </section>
 
     </main>
 
     <!-- Mobile Bottom Nav -->
     <nav class="md:hidden flex items-center justify-around bg-white border-t border-slate-200 pb-safe z-10 shrink-0 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
-        <button onclick="switchTab('hoje')" id="mob-hoje" class="flex flex-col items-center p-3 text-slate-400 mobile-nav-active">
-            <i data-lucide="sun" class="w-6 h-6 mb-1"></i><span class="text-[10px]">Hoje</span>
-        </button>
-        <button onclick="switchTab('plano')" id="mob-plano" class="flex flex-col items-center p-3 text-slate-400">
-            <i data-lucide="calendar" class="w-6 h-6 mb-1"></i><span class="text-[10px]">Plano</span>
-        </button>
-        <button onclick="switchTab('conteudos')" id="mob-conteudos" class="flex flex-col items-center p-3 text-slate-400 relative">
+        <button onclick="switchTab('conteudos')" id="mob-conteudos" class="flex flex-col items-center p-3 text-slate-400 mobile-nav-active relative">
             <div class="absolute -top-3 bg-blue-600 text-white p-2 rounded-full shadow-lg"><i data-lucide="library" class="w-5 h-5"></i></div>
             <span class="text-[10px] mt-6 font-bold text-blue-600">Conteúdos</span>
         </button>
@@ -227,6 +190,56 @@
         </button>
     </nav>
 
+    <!-- Modal Gerenciar Sessões -->
+    <div id="modal-sessoes" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden my-auto">
+            <div class="bg-slate-50 px-5 py-4 border-b border-slate-200 flex justify-between items-center">
+                <h3 class="font-bold text-slate-800">Sessões de Estudo</h3>
+                <button onclick="fecharModalSessoes()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="p-5 space-y-4">
+                <div id="lista-sessoes" class="space-y-2 max-h-60 overflow-y-auto pr-2"></div>
+                
+                <button onclick="criarNovaSessao()" class="w-full bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 py-3 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition mt-2">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Criar Nova Sessão (Novo Concurso)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Migração de Matéria -->
+    <div id="modal-migrar" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden my-auto flex flex-col max-h-[90vh]">
+            <div class="bg-slate-50 px-5 py-4 border-b border-slate-200 flex justify-between items-center shrink-0">
+                <div>
+                    <h3 class="font-bold text-slate-800">Migrar Matéria</h3>
+                    <p class="text-[11px] text-slate-500">Copiar conteúdos para outra sessão</p>
+                </div>
+                <button onclick="fecharModalMigrar()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            
+            <div class="p-5 overflow-y-auto space-y-4">
+                <input type="hidden" id="migrar-disc-id">
+                
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">1. Sessão de Destino</label>
+                    <select id="select-migrar-sessao" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"></select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">2. Selecione os Assuntos</label>
+                    <div id="lista-migrar-assuntos" class="bg-slate-50 border border-slate-200 rounded-lg p-2 space-y-1 max-h-48 overflow-y-auto"></div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-slate-50 border-t border-slate-200 flex gap-3 shrink-0">
+                <button onclick="fecharModalMigrar()" class="flex-1 bg-white border border-slate-300 text-slate-700 py-2.5 rounded-lg font-bold text-sm hover:bg-slate-50 transition">Cancelar</button>
+                <button onclick="confirmarMigracao()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg font-bold text-sm transition shadow-sm">Copiar Matéria</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modais Anteriores Preservados (Lançar Bateria e Histórico) -->
     <!-- Modal Lançar Bateria -->
     <div id="modal-questoes" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center p-4 z-50 overflow-y-auto">
         <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden my-auto">
@@ -321,7 +334,7 @@
         let disciplinasAbertas = new Set();
         let currentConfianca = 2;
 
-        // NAVEGAÇÃO
+        // NAVEGAÇÃO ENXUTA (3 Abas)
         window.switchTab = (tabName) => {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById('tab-' + tabName).classList.add('active');
@@ -329,15 +342,38 @@
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('nav-active'));
             document.getElementById('nav-' + tabName)?.classList.add('nav-active');
             
-            ['mob-hoje', 'mob-plano', 'mob-revisoes', 'mob-desempenho'].forEach(id => {
+            ['mob-conteudos', 'mob-revisoes', 'mob-desempenho'].forEach(id => {
                 const el = document.getElementById(id);
-                if(el) { el.classList.remove('mobile-nav-active'); el.classList.add('text-slate-400'); }
+                if(el) { 
+                    el.classList.remove('mobile-nav-active'); 
+                    el.classList.add('text-slate-400'); 
+                    
+                    // Reset do icone azul de conteúdos
+                    if(id === 'mob-conteudos') {
+                        const txt = el.querySelector('span');
+                        if(txt) { txt.classList.remove('text-blue-600', 'font-bold'); }
+                        const iconBg = el.querySelector('div.bg-blue-600');
+                        if(iconBg) { iconBg.classList.remove('bg-blue-600', 'text-white'); iconBg.classList.add('bg-slate-200', 'text-slate-400'); }
+                    }
+                }
             });
-            if(tabName !== 'conteudos') {
-                const mobEl = document.getElementById('mob-' + tabName);
-                if(mobEl) { mobEl.classList.add('mobile-nav-active'); mobEl.classList.remove('text-slate-400'); }
+            
+            const mobEl = document.getElementById('mob-' + tabName);
+            if(mobEl) { 
+                mobEl.classList.add('mobile-nav-active'); 
+                mobEl.classList.remove('text-slate-400'); 
+                
+                if(tabName === 'conteudos') {
+                    const txt = mobEl.querySelector('span');
+                    if(txt) { txt.classList.add('text-blue-600', 'font-bold'); }
+                    const iconBg = mobEl.querySelector('div.bg-slate-200');
+                    if(iconBg) { iconBg.classList.add('bg-blue-600', 'text-white'); iconBg.classList.remove('bg-slate-200', 'text-slate-400'); }
+                }
             }
         };
+
+        // Inicializa com a aba Conteúdos
+        setTimeout(() => switchTab('conteudos'), 100);
 
         // --- SISTEMA DE MIGRAÇÃO ---
         function realizarMigracaoEstrutural(dadosBrutos) {
@@ -351,11 +387,124 @@
 
         function getObjetivoAtivo() {
             if (!baseDados.objetivos || baseDados.objetivos.length === 0) {
-                baseDados.objetivos = [{ id: 'default-obj', nome: 'Meu Concurso', disciplinas: [], cicloIndex: 0 }];
+                baseDados.objetivos = [{ id: 'default-obj', nome: 'Sessão Principal', disciplinas: [], cicloIndex: 0 }];
                 baseDados.objetivoAtivo = 'default-obj';
             }
             return baseDados.objetivos.find(o => o.id === baseDados.objetivoAtivo) || baseDados.objetivos[0];
         }
+
+        // --- GESTOR DE SESSÕES (Concursos) ---
+        window.abrirModalSessoes = () => {
+            const html = document.getElementById('lista-sessoes');
+            html.innerHTML = '';
+            
+            baseDados.objetivos.forEach(o => {
+                const ativo = o.id === baseDados.objetivoAtivo;
+                html.innerHTML += `
+                    <div class="flex items-center justify-between p-3 border border-slate-200 rounded-lg ${ativo ? 'bg-blue-50 border-blue-300' : 'bg-white hover:bg-slate-50 cursor-pointer'}" ${ativo ? '' : `onclick="mudarSessao('${o.id}')"`}>
+                        <div>
+                            <p class="font-bold text-sm ${ativo ? 'text-blue-700' : 'text-slate-700'}">${o.nome}</p>
+                            <p class="text-[10px] text-slate-500">${o.disciplinas ? o.disciplinas.length : 0} disciplinas</p>
+                        </div>
+                        ${ativo ? '<span class="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full">Atual</span>' : '<i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>'}
+                    </div>
+                `;
+            });
+            document.getElementById('modal-sessoes').classList.remove('hidden'); document.getElementById('modal-sessoes').classList.add('flex');
+            lucide.createIcons();
+        };
+
+        window.fecharModalSessoes = () => { document.getElementById('modal-sessoes').classList.add('hidden'); document.getElementById('modal-sessoes').classList.remove('flex'); };
+
+        window.mudarSessao = (id) => {
+            baseDados.objetivoAtivo = id;
+            disciplinasAbertas.clear();
+            salvarDados();
+            fecharModalSessoes();
+        };
+
+        window.criarNovaSessao = () => {
+            const nome = prompt("Nome da Nova Sessão de Estudos (Ex: Concurso TJ-PI):");
+            if(nome && nome.trim() !== '') {
+                const novoId = 'sessao-' + Date.now();
+                baseDados.objetivos.push({ id: novoId, nome: nome.trim(), disciplinas: [], cicloIndex: 0 });
+                baseDados.objetivoAtivo = novoId;
+                disciplinasAbertas.clear();
+                salvarDados();
+                fecharModalSessoes();
+            }
+        };
+
+        // --- MIGRAÇÃO DE MATÉRIAS ---
+        window.abrirModalMigrar = (discId) => {
+            const obj = getObjetivoAtivo();
+            const disc = obj.disciplinas.find(d => d.id === discId);
+            
+            let sessoesOp = '';
+            baseDados.objetivos.forEach(o => {
+                if(o.id !== obj.id) sessoesOp += `<option value="${o.id}">${o.nome}</option>`;
+            });
+
+            if(sessoesOp === '') {
+                alert("Você precisa criar uma Nova Sessão de Estudo primeiro (no menu principal) para poder migrar conteúdos.");
+                return;
+            }
+
+            document.getElementById('select-migrar-sessao').innerHTML = sessoesOp;
+            document.getElementById('migrar-disc-id').value = discId;
+
+            let htmlAssuntos = '';
+            disc.assuntos.forEach(a => {
+                htmlAssuntos += `
+                    <label class="flex items-center gap-3 p-2 hover:bg-slate-100 rounded cursor-pointer border-b border-slate-100 last:border-0 text-sm font-medium text-slate-700">
+                        <input type="checkbox" class="migrar-chk w-4 h-4 text-blue-600 rounded" value="${a.id}" checked>
+                        ${a.nome}
+                    </label>
+                `;
+            });
+            
+            document.getElementById('lista-migrar-assuntos').innerHTML = htmlAssuntos || '<p class="text-xs text-slate-500 p-2">Nenhum assunto nesta disciplina.</p>';
+            
+            document.getElementById('modal-migrar').classList.remove('hidden'); document.getElementById('modal-migrar').classList.add('flex');
+        };
+
+        window.fecharModalMigrar = () => { document.getElementById('modal-migrar').classList.add('hidden'); document.getElementById('modal-migrar').classList.remove('flex'); };
+
+        window.confirmarMigracao = () => {
+            const discId = document.getElementById('migrar-disc-id').value;
+            const targetSessaoId = document.getElementById('select-migrar-sessao').value;
+            
+            const checks = document.querySelectorAll('.migrar-chk:checked');
+            const assuntosIds = Array.from(checks).map(chk => chk.value);
+            
+            if(assuntosIds.length === 0) { alert("Selecione pelo menos um assunto para copiar."); return; }
+
+            const objAtual = getObjetivoAtivo();
+            const discOriginal = objAtual.disciplinas.find(d => d.id === discId);
+            
+            // Fazemos uma clonagem profunda (deep clone) para a nova sessão
+            const novaDisc = {
+                id: 'disc-' + Date.now() + Math.random().toString(36).substr(2,4),
+                nome: discOriginal.nome,
+                assuntos: []
+            };
+
+            assuntosIds.forEach(aId => {
+                const assOriginal = discOriginal.assuntos.find(a => a.id === aId);
+                const assClone = JSON.parse(JSON.stringify(assOriginal));
+                // Geramos um novo ID para o clone para não haver conflitos na base
+                assClone.id = 'ass-' + Date.now() + Math.random().toString(36).substr(2,4);
+                novaDisc.assuntos.push(assClone);
+            });
+
+            const targetSessao = baseDados.objetivos.find(o => o.id === targetSessaoId);
+            if(!targetSessao.disciplinas) targetSessao.disciplinas = [];
+            targetSessao.disciplinas.push(novaDisc);
+
+            salvarDados();
+            fecharModalMigrar();
+            alert(`A matéria "${novaDisc.nome}" foi copiada com sucesso para a sessão "${targetSessao.nome}".`);
+        };
 
         // --- FIREBASE ---
         let userId = localStorage.getItem('estudei_tablet_id') || ('user_' + Math.random().toString(36).substr(2, 6).toUpperCase());
@@ -443,19 +592,13 @@
             return { avancou, status, msgAcao };
         }
         
-        // --- FUNÇÃO DE RECÁLCULO SEGURO APÓS APAGAR BATERIA ---
         function recalcularEstadoAssunto(assunto) {
-            // Reinicia a base do assunto
             assunto.camadaAtual = 1;
             assunto.proximaAcao = { status: 'neutro', msg: "Aguardando 1ª aferição." };
-            
             if (!assunto.historico || assunto.historico.length === 0) return;
-            
-            // Re-avalia o histórico restante cronologicamente
             assunto.historico.sort((a,b) => new Date(a.data) - new Date(b.data)).forEach(bat => {
-                bat.camadaAplicada = assunto.camadaAtual; // Ajusta o rótulo da camada no histórico
+                bat.camadaAplicada = assunto.camadaAtual; 
                 const avaliacao = avaliarProgresso(assunto, bat.perc);
-                
                 if (avaliacao.avancou) assunto.camadaAtual += 1;
                 assunto.proximaAcao = { status: avaliacao.status, msg: avaliacao.msgAcao };
                 assunto.nivelConfianca = bat.confianca || 2;
@@ -497,7 +640,6 @@
             salvarDados();
         };
 
-        // NOVO: Excluir Disciplina Completa
         window.excluirDisciplina = (discId, event) => {
             event.stopPropagation();
             if(!confirm("Tem certeza que deseja apagar esta disciplina inteira e todo o seu histórico?")) return;
@@ -518,7 +660,6 @@
             disciplinasAbertas.add(discId); salvarDados();
         };
 
-        // NOVO: Excluir Apenas um Assunto
         window.excluirAssunto = (discId, assuntoId) => {
             if(!confirm("Tem certeza que deseja apagar este assunto e todo o seu histórico de revisões?")) return;
             const obj = getObjetivoAtivo();
@@ -527,21 +668,15 @@
             salvarDados();
         };
 
-        // NOVO: Apagar uma única Aferição/Bateria e recalcular
         window.excluirBateria = (discId, assuntoId, batId) => {
             if(!confirm("Tem certeza que deseja apagar esta aferição? A sua Camada atual será recalculada.")) return;
             const obj = getObjetivoAtivo();
             const disc = obj.disciplinas.find(d => d.id === discId);
             const assunto = disc.assuntos.find(a => a.id === assuntoId);
-            
-            // Remove a bateria específica
             assunto.historico = assunto.historico.filter(b => b.id !== batId);
-            
-            // Refaz os cálculos com o que restou
             recalcularEstadoAssunto(assunto);
-            
             salvarDados();
-            abrirModalHistorico(discId, assuntoId); // Recarrega o modal instantaneamente
+            abrirModalHistorico(discId, assuntoId);
         };
 
         window.abrirModalQuestoes = (discId, assuntoId) => {
@@ -628,7 +763,6 @@
                     if(bat.confianca===2) iConf = '<i data-lucide="meh" class="w-3 h-3 text-amber-500 inline"></i>';
                     if(bat.confianca===3) iConf = '<i data-lucide="smile" class="w-3 h-3 text-green-500 inline"></i>';
 
-                    // Lixeira adicionada ao card de histórico
                     listaHTML.innerHTML += `
                         <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm text-sm relative pr-10">
                             <button onclick="excluirBateria('${disc.id}', '${assunto.id}', '${bat.id}')" class="absolute top-3 right-3 text-slate-300 hover:text-red-500 transition" title="Apagar esta aferição">
@@ -666,6 +800,8 @@
             let kpiFeitas = 0, kpiErros = 0, kpiC3 = 0, kpiAlertas = 0;
             const listaHTML = document.getElementById('lista-disciplinas');
             const listaRevHTML = document.getElementById('container-revisoes-pendentes');
+            let detalhadoHtml = ''; // Para o histórico de desempenho
+            
             listaHTML.innerHTML = '';
             listaRevHTML.innerHTML = '';
             
@@ -675,12 +811,16 @@
 
             (objAtivo.disciplinas || []).forEach(disc => {
                 let htmlAssuntos = '';
+                let htmlAssuntosDesempenho = '';
+                let discFeitas = 0, discErros = 0;
                 
                 disc.assuntos.forEach(assunto => {
                     let aFeitas = 0, aErros = 0;
                     if(assunto.historico) { assunto.historico.forEach(h => { aFeitas += h.feitas; aErros += h.erros; }); }
 
                     kpiFeitas += aFeitas; kpiErros += aErros;
+                    discFeitas += aFeitas; discErros += aErros;
+                    
                     if(assunto.camadaAtual === 3) kpiC3++;
                     if(assunto.proximaAcao?.status === 'alerta') kpiAlertas++;
 
@@ -692,6 +832,7 @@
                     const cClasse = `camada-${assunto.camadaAtual || 1}`;
                     const corAcao = assunto.proximaAcao ? `status-${assunto.proximaAcao.status}` : 'status-neutro';
 
+                    // HTML Para aba Conteúdos
                     htmlAssuntos += `
                         <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm hover:border-blue-300 transition relative">
                             <div class="flex justify-between items-start mb-2 pr-6">
@@ -702,7 +843,6 @@
                                 <span class="text-[11px] font-bold text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">${aPerc}%</span>
                             </div>
                             
-                            <!-- Botão Lixeira do Assunto -->
                             <button onclick="excluirAssunto('${disc.id}', '${assunto.id}')" class="absolute top-3 right-3 text-slate-300 hover:text-red-500 transition" title="Excluir assunto">
                                 <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                             </button>
@@ -719,9 +859,22 @@
                             </div>
                         </div>
                     `;
+
+                    // HTML Para aba Desempenho Detalhado
+                    htmlAssuntosDesempenho += `
+                        <div class="flex justify-between items-center py-2 border-b border-slate-100 last:border-0 hover:bg-slate-50 px-2 rounded transition">
+                            <span class="text-xs text-slate-600 font-medium truncate pr-2">${assunto.nome}</span>
+                            <div class="flex items-center gap-3 text-xs shrink-0">
+                                <span class="font-bold text-slate-500 w-6 text-center border rounded ${cClasse}">C${assunto.camadaAtual||1}</span>
+                                <span class="font-bold text-blue-600 w-8 text-right">${aPerc}%</span>
+                            </div>
+                        </div>
+                    `;
                 });
 
                 const estaAberta = disciplinasAbertas.has(disc.id);
+                
+                // Renderização Conteúdos
                 listaHTML.innerHTML += `
                     <div class="bg-white border border-slate-200 rounded-xl shadow-sm mb-3 relative">
                         <div class="px-4 py-3 flex justify-between items-center cursor-pointer hover:bg-slate-50" onclick="toggleDisciplina('${disc.id}')">
@@ -731,10 +884,10 @@
                             </div>
                         </div>
                         
-                        <!-- Ações da Disciplina -->
                         <div class="absolute top-2.5 right-4 flex gap-1">
+                            <button onclick="abrirModalMigrar('${disc.id}')" class="bg-slate-100 hover:bg-emerald-100 text-slate-400 hover:text-emerald-600 px-2 py-1.5 rounded-md transition" title="Copiar matéria para outra sessão"><i data-lucide="copy" class="w-3 h-3"></i></button>
                             <button onclick="adicionarAssunto('${disc.id}', event)" class="bg-slate-100 hover:bg-blue-100 text-slate-600 hover:text-blue-700 px-2 py-1.5 rounded-md transition text-xs font-bold flex items-center gap-1"><i data-lucide="plus" class="w-3 h-3"></i> Assunto</button>
-                            <button onclick="excluirDisciplina('${disc.id}', event)" class="bg-slate-100 hover:bg-red-100 text-slate-400 hover:text-red-500 px-2 py-1.5 rounded-md transition"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+                            <button onclick="excluirDisciplina('${disc.id}', event)" class="bg-slate-100 hover:bg-red-100 text-slate-400 hover:text-red-500 px-2 py-1.5 rounded-md transition" title="Apagar Disciplina"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
                         </div>
 
                         <div class="${estaAberta ? 'grid grid-cols-1 md:grid-cols-2 gap-3' : 'hidden'} bg-slate-50 border-t border-slate-100 p-3">
@@ -742,7 +895,23 @@
                         </div>
                     </div>
                 `;
+
+                // Renderização Desempenho Detalhado
+                const discPerc = discFeitas > 0 ? Math.round(((discFeitas - discErros) / discFeitas) * 100) : 0;
+                detalhadoHtml += `
+                    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm mb-4">
+                        <div class="flex justify-between items-center mb-3 pb-2 border-b border-slate-200">
+                            <h3 class="font-bold text-slate-800 text-sm">${disc.nome}</h3>
+                            <div class="text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-100 px-2 py-1 rounded">Total: ${discPerc}%</div>
+                        </div>
+                        <div class="space-y-1">
+                            ${htmlAssuntosDesempenho || '<p class="text-[11px] text-slate-400">Sem histórico de assuntos.</p>'}
+                        </div>
+                    </div>
+                `;
             });
+
+            document.getElementById('desempenho-detalhado').innerHTML = detalhadoHtml || '<p class="text-sm text-slate-500 text-center py-8">Cadastre conteúdos para ver o histórico detalhado.</p>';
 
             revisoesPendentes.sort((a,b) => a.data - b.data); 
             
