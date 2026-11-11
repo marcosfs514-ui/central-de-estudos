@@ -1,1503 +1,744 @@
-
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estudei — Método Camadas</title>
-    <!-- Tailwind CSS -->
+    <title>Estudei - Centro de Preparação</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
         
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #f8fafc; 
-            color: #0f172a;
-        }
-
-        /* Camadas Badges */
-        .camada-0 { background-color: #f1f5f9; color: #64748b; border-color: #cbd5e1; }
-        .camada-1 { background-color: #fef3c7; color: #92400e; border-color: #fcd34d; }
-        .camada-2 { background-color: #e0f2fe; color: #075985; border-color: #7dd3fc; }
-        .camada-3 { background-color: #dcfce7; color: #166534; border-color: #86efac; }
-
-        /* Status colors */
-        .status-alerta { color: #ef4444; font-weight: 600; }
-        .status-sucesso { color: #10b981; font-weight: 600; }
-        .status-neutro { color: #64748b; font-weight: 500; }
-
-        /* Custom Scrollbars */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        /* Paleta de Camadas */
+        .camada-1 { background-color: #fef3c7; color: #92400e; border-color: #fbbf24; } 
+        .camada-2 { background-color: #e0f2fe; color: #075985; border-color: #38bdf8; } 
+        .camada-3 { background-color: #dcfce7; color: #166534; border-color: #4ade80; } 
+        
+        /* Ocultar barra de rolagem (limpeza visual) */
+        ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-        /* Navigation Active States */
-        .nav-item-active {
-            background-color: #1e293b;
-            color: #ffffff;
-            border-left: 4px solid #3b82f6;
-        }
-        .mobile-nav-active {
-            color: #2563eb;
-            font-weight: 700;
-        }
-
-        /* Tabs display logic */
-        .tab-panel { display: none; }
-        .tab-panel.active { display: block; }
-
-        /* Button active scale */
-        .btn-conf-active {
-            border-width: 2px !important;
-            transform: scale(1.02);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .btn-conf-1.btn-conf-active { border-color: #ef4444 !important; background-color: #fef2f2 !important; }
-        .btn-conf-2.btn-conf-active { border-color: #f59e0b !important; background-color: #fffbeb !important; }
-        .btn-conf-3.btn-conf-active { border-color: #10b981 !important; background-color: #ecfdf5 !important; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        
+        /* Classes utilitárias de UI */
+        .nav-active { background-color: #eff6ff; color: #2563eb; border-right: 3px solid #2563eb; font-weight: 600; }
+        .nav-item { transition: all 0.2s ease; }
+        .nav-item:hover:not(.nav-active) { background-color: #f8fafc; color: #334155; }
+        .mobile-nav-active { color: #2563eb; font-weight: 600; }
+        
+        /* Botões de Confiança RARD */
+        .btn-conf-active { border-width: 2px; transform: scale(1.02); }
+        .btn-conf-1.btn-conf-active { border-color: #ef4444; background-color: #fef2f2; }
+        .btn-conf-2.btn-conf-active { border-color: #f59e0b; background-color: #fffbeb; }
+        .btn-conf-3.btn-conf-active { border-color: #22c55e; background-color: #f0fdf4; }
+        
+        /* Transições */
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="h-screen flex flex-col md:flex-row overflow-hidden bg-slate-50">
+<body class="text-slate-800 h-screen flex flex-col md:flex-row overflow-hidden">
 
-    <!-- BANNER DE ALERTA DE CONFIGURAÇÃO DO FIREBASE (Caso esteja incompleta) -->
-    <div id="firebase-config-banner" class="hidden fixed top-0 inset-x-0 z-[60] bg-amber-500 text-slate-950 px-4 py-2.5 text-xs md:text-sm font-semibold shadow-md flex items-center justify-between gap-3">
-        <div class="flex items-center gap-2">
-            <i data-lucide="alert-triangle" class="w-5 h-5 shrink-0"></i>
-            <span><strong>Atenção:</strong> Credenciais do Firebase não configuradas. O aplicativo está operando em <strong>Modo Local Offline</strong> (armazenado no tablet).</span>
-        </div>
-        <button onclick="document.getElementById('firebase-config-banner').classList.add('hidden')" class="text-slate-950 hover:opacity-75 p-1">
-            <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
-    </div>
-
-    <!-- DESKTOP SIDEBAR -->
-    <aside class="hidden md:flex flex-col w-64 bg-slate-900 text-slate-300 h-full border-r border-slate-800 shrink-0 z-20 shadow-xl">
-        <!-- Logo & Header -->
-        <div class="p-5 border-b border-slate-800 flex items-center gap-3">
-            <div class="bg-blue-600 p-2 rounded-xl text-white shadow-md shadow-blue-500/20">
-                <i data-lucide="book-open" class="w-6 h-6"></i>
-            </div>
+    <!-- Sidebar Desktop -->
+    <aside class="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 h-full shadow-sm z-10 shrink-0">
+        <div class="p-6 border-b border-slate-100 flex items-center gap-3">
+            <div class="bg-blue-600 p-2 rounded-lg"><i data-lucide="book-open" class="w-6 h-6 text-white"></i></div>
             <div>
-                <h1 class="text-lg font-bold text-white leading-none tracking-tight">Estudei</h1>
-                <p class="text-[10px] text-blue-400 font-semibold tracking-wider uppercase mt-1">Método Camadas PRO</p>
+                <h1 class="text-xl font-bold text-slate-900 leading-tight">Estudei</h1>
+                <p class="text-[10px] text-slate-500 font-medium tracking-wide uppercase">Método Camadas</p>
+            </div>
+        </div>
+        
+        <div class="px-6 py-4 border-b border-slate-100">
+            <p class="text-xs font-bold text-slate-400 uppercase mb-2">Objetivo Atual</p>
+            <div class="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg p-2 cursor-pointer hover:bg-slate-100 transition" onclick="alert('Fase 5: Troca de Concursos')">
+                <span id="label-objetivo-desktop" class="text-sm font-semibold text-slate-700 truncate">Carregando...</span>
+                <i data-lucide="chevrons-up-down" class="w-4 h-4 text-slate-400"></i>
             </div>
         </div>
 
-        <!-- Seletor de Concurso/Objetivo -->
-        <div class="px-4 py-3 border-b border-slate-800">
-            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Concurso Ativo</label>
-            <div onclick="abrirModalConfig()" class="flex items-center justify-between bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 rounded-lg p-2.5 cursor-pointer transition">
-                <div class="flex items-center gap-2 truncate">
-                    <i data-lucide="trophy" class="w-4 h-4 text-amber-400 shrink-0"></i>
-                    <span id="label-objetivo-desktop" class="text-xs font-bold text-slate-200 truncate">Carregando...</span>
-                </div>
-                <i data-lucide="chevrons-up-down" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
-            </div>
-        </div>
-
-        <!-- Navegação Principal -->
         <nav class="flex-1 py-4 space-y-1">
-            <button onclick="switchTab('hoje')" id="nav-hoje" class="nav-item-active w-full flex items-center gap-3 px-5 py-3 text-sm font-medium transition text-left">
-                <i data-lucide="sun" class="w-4 h-4"></i> Hoje
+            <button onclick="switchTab('hoje')" id="nav-hoje" class="nav-item nav-active w-full flex items-center gap-3 px-6 py-3 text-sm text-slate-500 text-left">
+                <i data-lucide="sun" class="w-5 h-5"></i> Hoje
             </button>
-            <button onclick="switchTab('plano')" id="nav-plano" class="w-full flex items-center gap-3 px-5 py-3 text-sm font-medium text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 transition text-left">
-                <i data-lucide="compass" class="w-4 h-4"></i> Meu Plano
+            <button onclick="switchTab('plano')" id="nav-plano" class="nav-item w-full flex items-center gap-3 px-6 py-3 text-sm text-slate-500 text-left">
+                <i data-lucide="calendar" class="w-5 h-5"></i> Meu Plano
             </button>
-            <button onclick="switchTab('conteudos')" id="nav-conteudos" class="w-full flex items-center gap-3 px-5 py-3 text-sm font-medium text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 transition text-left">
-                <i data-lucide="layers" class="w-4 h-4"></i> Conteúdos (Camadas)
+            <button onclick="switchTab('conteudos')" id="nav-conteudos" class="nav-item w-full flex items-center gap-3 px-6 py-3 text-sm text-slate-500 text-left">
+                <i data-lucide="library" class="w-5 h-5"></i> Conteúdos (Camadas)
             </button>
-            <button onclick="switchTab('revisoes')" id="nav-revisoes" class="w-full flex items-center justify-between px-5 py-3 text-sm font-medium text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 transition text-left">
-                <div class="flex items-center gap-3">
-                    <i data-lucide="repeat" class="w-4 h-4"></i> Revisões RARD
-                </div>
-                <span id="badge-rev-desktop" class="hidden bg-red-500 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-full">0</span>
+            <button onclick="switchTab('revisoes')" id="nav-revisoes" class="nav-item w-full flex items-center justify-between px-6 py-3 text-sm text-slate-500 text-left relative">
+                <div class="flex items-center gap-3"><i data-lucide="repeat" class="w-5 h-5"></i> Revisões RARD</div>
+                <span id="badge-rev-desktop" class="hidden bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
             </button>
-            <button onclick="switchTab('desempenho')" id="nav-desempenho" class="w-full flex items-center gap-3 px-5 py-3 text-sm font-medium text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 transition text-left">
-                <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Desempenho
+            <button onclick="switchTab('desempenho')" id="nav-desempenho" class="nav-item w-full flex items-center gap-3 px-6 py-3 text-sm text-slate-500 text-left">
+                <i data-lucide="bar-chart-2" class="w-5 h-5"></i> Desempenho
             </button>
         </nav>
 
-        <!-- Footer / Status Sincronização & Backup -->
-        <div class="p-4 border-t border-slate-800 bg-slate-950/40 space-y-2">
-            <div id="cloud-status-desktop" class="flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700/60 text-slate-300">
-                <i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin text-blue-400"></i> Sincronizando...
+        <div class="p-4 border-t border-slate-200 bg-slate-50 space-y-2">
+            <div id="cloud-status" class="flex items-center gap-2 text-xs font-medium px-3 py-2 rounded bg-white border border-slate-200 text-slate-500 shadow-sm">
+                <i data-lucide="loader-2" class="w-3 h-3 animate-spin text-blue-500"></i> Sincronizando...
             </div>
-
-            <div class="grid grid-cols-2 gap-2 pt-1">
-                <button onclick="exportarBackupJSON()" class="text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 py-1.5 px-2 rounded-md flex items-center justify-center gap-1 border border-slate-700 transition" title="Exportar Backup em JSON">
-                    <i data-lucide="download" class="w-3 h-3"></i> Backup
+            <div class="flex gap-2">
+                <button onclick="exportarBackup()" class="flex-1 text-[11px] font-semibold flex items-center justify-center gap-1 bg-white border border-slate-200 hover:bg-slate-100 py-1.5 rounded text-slate-600 transition" title="Exportar Backup JSON">
+                    <i data-lucide="download" class="w-3 h-3"></i> Salvar
                 </button>
-                <label class="text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 py-1.5 px-2 rounded-md flex items-center justify-center gap-1 border border-slate-700 cursor-pointer transition text-center" title="Importar Backup em JSON">
+                <label class="flex-1 text-[11px] font-semibold flex items-center justify-center gap-1 bg-white border border-slate-200 hover:bg-slate-100 py-1.5 rounded text-slate-600 transition cursor-pointer" title="Importar Backup JSON">
                     <i data-lucide="upload" class="w-3 h-3"></i> Restaurar
-                    <input type="file" accept=".json" class="hidden" onchange="processarArquivoImportacao(event)">
+                    <input type="file" accept=".json" class="hidden" onchange="importarBackup(event)">
                 </label>
             </div>
-            
-            <button onclick="abrirModalConfig()" class="w-full text-[10px] text-slate-400 hover:text-slate-200 flex items-center justify-center gap-1 py-1">
-                <i data-lucide="key" class="w-3 h-3"></i> ID Sync: <span id="display-user-id" class="font-mono text-blue-400">...</span>
-            </button>
         </div>
     </aside>
 
-    <!-- MOBILE HEADER -->
-    <header class="md:hidden flex justify-between items-center bg-slate-900 text-white p-3.5 border-b border-slate-800 shrink-0 z-20 shadow-md">
-        <div class="flex items-center gap-2.5">
-            <div class="bg-blue-600 p-1.5 rounded-lg"><i data-lucide="book-open" class="w-4 h-4 text-white"></i></div>
-            <div>
-                <h1 class="text-sm font-bold leading-none">Estudei</h1>
-                <p class="text-[9px] text-blue-400 font-semibold uppercase tracking-wider">Método Camadas</p>
-            </div>
-        </div>
+    <!-- Mobile Header -->
+    <header class="md:hidden flex justify-between items-center bg-white border-b border-slate-200 p-4 shrink-0 z-10 shadow-sm">
         <div class="flex items-center gap-2">
-            <button onclick="abrirModalConfig()" class="text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded-md border border-slate-700 truncate max-w-[120px] flex items-center gap-1">
-                <i data-lucide="trophy" class="w-3 h-3 text-amber-400 shrink-0"></i>
-                <span id="label-objetivo-mobile" class="truncate">...</span>
-            </button>
-            <div id="cloud-status-mobile" class="p-1">
-                <i data-lucide="loader-2" class="w-4 h-4 animate-spin text-blue-400"></i>
-            </div>
+            <div class="bg-blue-600 p-1.5 rounded"><i data-lucide="book-open" class="w-4 h-4 text-white"></i></div>
+            <h1 class="text-base font-bold text-slate-900">Estudei</h1>
+        </div>
+        <div class="flex items-center gap-3">
+            <span id="label-objetivo-mobile" class="text-[11px] font-bold bg-slate-100 px-2 py-1 rounded text-slate-600 border border-slate-200 truncate max-w-[100px]">...</span>
+            <div id="cloud-status-mobile"><i data-lucide="loader-2" class="w-4 h-4 animate-spin text-blue-500"></i></div>
         </div>
     </header>
 
-    <!-- ÁREA PRINCIPAL DE CONTEÚDO (MUDANÇA DE ABAS) -->
-    <main class="flex-1 overflow-y-auto relative bg-slate-50 pt-2 pb-24 md:pb-6">
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto relative bg-slate-50">
         
-        <!-- ABA 1: HOJE -->
-        <section id="tab-hoje" class="tab-panel active p-4 md:p-8 max-w-5xl mx-auto space-y-6">
-            <!-- Header da Aba -->
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-4">
+        <!-- ABA: HOJE -->
+        <section id="tab-hoje" class="tab-content active p-4 md:p-8 max-w-4xl mx-auto space-y-6">
+            <div class="flex items-center gap-3 mb-6">
+                <i data-lucide="sun" class="w-8 h-8 text-blue-600"></i>
                 <div>
-                    <h2 class="text-2xl font-extrabold text-slate-900 flex items-center gap-2.5">
-                        <i data-lucide="sun" class="w-7 h-7 text-amber-500"></i> O que preciso fazer hoje?
-                    </h2>
-                    <p class="text-sm text-slate-500 mt-0.5">Seu painel direto de execução para focar e resolver questões.</p>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span class="text-xs font-semibold px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1.5">
-                        <i data-lucide="calendar" class="w-3.5 h-3.5"></i> <span id="hoje-data-atual">--/--/----</span>
-                    </span>
+                    <h2 class="text-2xl font-bold text-slate-800">O que preciso estudar hoje?</h2>
+                    <p class="text-sm text-slate-500">Seu resumo diário para não perder tempo.</p>
                 </div>
             </div>
-
-            <!-- Card Foco do Ciclo Atual -->
-            <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 shadow-xl border border-slate-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-5">
-                <div class="space-y-1.5 flex-1">
-                    <div class="flex items-center gap-2">
-                        <span class="bg-blue-600 text-white text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full tracking-wider">Passo do Ciclo</span>
-                        <span class="text-xs text-slate-400">Rodízio do Plano</span>
-                    </div>
-                    <h3 id="hoje-ciclo-materia" class="text-2xl md:text-3xl font-black text-white tracking-tight">Carregando...</h3>
-                    <p class="text-xs text-slate-300">Resolver questões da próxima bateria para aferição da Camada.</p>
-                </div>
-                <div class="flex gap-2 w-full md:w-auto shrink-0">
-                    <button onclick="avancarRodizioCiclo()" class="flex-1 md:flex-initial bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition shadow-lg shadow-blue-600/30">
-                        <i data-lucide="refresh-cw" class="w-4 h-4"></i> Avançar Ciclo
-                    </button>
-                    <button onclick="switchTab('conteudos')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-4 py-3 rounded-xl font-bold text-sm flex items-center justify-center transition">
-                        Ver Edital
-                    </button>
-                </div>
-            </div>
-
-            <!-- Grid de Atalhos Rápidos & Resumos -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <!-- Alertas RARD Pendentes -->
-                <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3">
-                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                        <h4 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                            <i data-lucide="alert-circle" class="w-4 h-4 text-red-500"></i> Revisões Prioritárias Pendentes
-                        </h4>
-                        <span id="hoje-count-revisoes" class="text-xs font-bold bg-red-100 text-red-700 px-2 py-0.5 rounded-full">0</span>
-                    </div>
-                    <div id="hoje-lista-revisoes" class="space-y-2">
-                        <!-- Renderizado via JS -->
-                    </div>
-                </div>
-
-                <!-- Resumo do Método Camadas & Alertas -->
-                <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3">
-                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                        <h4 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                            <i data-lucide="target" class="w-4 h-4 text-blue-600"></i> Assuntos com Atenção Necessária
-                        </h4>
-                        <span id="hoje-count-alertas" class="text-xs font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">0</span>
-                    </div>
-                    <div id="hoje-lista-alertas" class="space-y-2">
-                        <!-- Renderizado via JS -->
-                    </div>
-                </div>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 text-center text-slate-500">
+                <i data-lucide="construction" class="w-12 h-12 mx-auto text-blue-200 mb-3"></i>
+                <h3 class="font-bold text-slate-700 text-lg">Fase 4: Dashboard Diário em Construção</h3>
+                <p class="text-sm mt-1">Por enquanto, acompanhe suas metas na aba <b>Conteúdos</b> e verifique as <b>Revisões</b>.</p>
             </div>
         </section>
 
-        <!-- ABA 2: MEU PLANO -->
-        <section id="tab-plano" class="tab-panel p-4 md:p-8 max-w-5xl mx-auto space-y-6">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-4">
+        <!-- ABA: MEU PLANO -->
+        <section id="tab-plano" class="tab-content p-4 md:p-8 max-w-4xl mx-auto space-y-6">
+            <div class="flex items-center gap-3 mb-6">
+                <i data-lucide="calendar" class="w-8 h-8 text-blue-600"></i>
                 <div>
-                    <h2 class="text-2xl font-extrabold text-slate-900 flex items-center gap-2.5">
-                        <i data-lucide="compass" class="w-7 h-7 text-blue-600"></i> Ciclo de Estudos
-                    </h2>
-                    <p class="text-sm text-slate-500 mt-0.5">Defina a ordem das disciplinas no rodízio de matérias sem rigidez de dias fixos.</p>
+                    <h2 class="text-2xl font-bold text-slate-800">Meu Plano</h2>
+                    <p class="text-sm text-slate-500">Ciclo de Estudos e Agenda.</p>
                 </div>
-                <button onclick="avancarRodizioCiclo()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition shadow-sm">
-                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> Girar/Avançar Ciclo
-                </button>
             </div>
-
-            <!-- Visão Geral do Ciclo -->
-            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
-                <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
-                    <i data-lucide="list-ordered" class="w-5 h-5 text-slate-600"></i> Sequência de Disciplinas do Rodízio
-                </h3>
-                <div id="plano-lista-ciclo" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    <!-- Preenchido via JS -->
-                </div>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 text-center text-slate-500">
+                <p>Aqui organizaremos o seu Ciclo Ponderado (Fase 5).</p>
             </div>
         </section>
 
-        <!-- ABA 3: CONTEÚDOS (MÉTODO CAMADAS STRICT) -->
-        <section id="tab-conteudos" class="tab-panel p-4 md:p-8 max-w-5xl mx-auto space-y-6">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-4">
-                <div>
-                    <h2 class="text-2xl font-extrabold text-slate-900 flex items-center gap-2.5">
-                        <i data-lucide="layers" class="w-7 h-7 text-blue-600"></i> Estrutura do Edital & Camadas
-                    </h2>
-                    <p class="text-sm text-slate-500 mt-0.5">Aferição de desempenho por assunto. Meta C1 (75%), C2 (85%), C3 (>90%).</p>
+        <!-- ABA: CONTEÚDOS -->
+        <section id="tab-conteudos" class="tab-content p-4 md:p-8 max-w-4xl mx-auto space-y-6">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="library" class="w-8 h-8 text-blue-600"></i>
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800">Estrutura do Edital</h2>
+                        <p class="text-sm text-slate-500">Disciplinas, Assuntos e Aferição de Camadas.</p>
+                    </div>
                 </div>
-                <button onclick="adicionarDisciplinaPrompt()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition shadow-sm">
+                <button onclick="adicionarDisciplina()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition shadow-sm">
                     <i data-lucide="plus" class="w-4 h-4"></i> Nova Disciplina
                 </button>
             </div>
+            <div id="lista-disciplinas" class="space-y-4 pb-20 md:pb-0"></div>
+        </section>
 
-            <!-- Lista de Disciplinas & Assuntos -->
-            <div id="lista-disciplinas-conteudo" class="space-y-4">
-                <!-- Preenchido via JS -->
+        <!-- ABA: REVISÕES RARD -->
+        <section id="tab-revisoes" class="tab-content p-4 md:p-8 max-w-4xl mx-auto space-y-6">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="repeat" class="w-8 h-8 text-blue-600"></i>
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800">Revisões Inteligentes</h2>
+                        <p class="text-sm text-slate-500">Baseado no seu nível de retenção (Esquecimento zero).</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="container-revisoes-pendentes" class="space-y-4 pb-20 md:pb-0">
+                <!-- Lista de revisões gerada pelo JS -->
             </div>
         </section>
 
-        <!-- ABA 4: REVISÕES RARD -->
-        <section id="tab-revisoes" class="tab-panel p-4 md:p-8 max-w-5xl mx-auto space-y-6">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-4">
+        <!-- ABA: DESEMPENHO -->
+        <section id="tab-desempenho" class="tab-content p-4 md:p-8 max-w-4xl mx-auto space-y-6">
+            <div class="flex items-center gap-3 mb-6">
+                <i data-lucide="bar-chart-2" class="w-8 h-8 text-blue-600"></i>
                 <div>
-                    <h2 class="text-2xl font-extrabold text-slate-900 flex items-center gap-2.5">
-                        <i data-lucide="repeat" class="w-7 h-7 text-blue-600"></i> Revisões Adaptativas RARD
-                    </h2>
-                    <p class="text-sm text-slate-500 mt-0.5">Recuperação ativa baseada na confiança e retenção das baterias anteriores.</p>
+                    <h2 class="text-2xl font-bold text-slate-800">Análise de Desempenho</h2>
+                    <p class="text-sm text-slate-500">Indicadores consolidados do Objetivo Atual.</p>
                 </div>
             </div>
-
-            <div id="container-revisoes-rard" class="space-y-3">
-                <!-- Lista de Revisões Pendentes -->
-            </div>
-        </section>
-
-        <!-- ABA 5: DESEMPENHO -->
-        <section id="tab-desempenho" class="tab-panel p-4 md:p-8 max-w-5xl mx-auto space-y-6">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-4">
-                <div>
-                    <h2 class="text-2xl font-extrabold text-slate-900 flex items-center gap-2.5">
-                        <i data-lucide="bar-chart-3" class="w-7 h-7 text-blue-600"></i> Análise de Desempenho
-                    </h2>
-                    <p class="text-sm text-slate-500 mt-0.5">Métricas consolidadas de questões, acertos e avanço de edital.</p>
-                </div>
-            </div>
-
-            <!-- KPIs principais -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-center">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Questões Globais</p>
-                    <p id="kpi-total-questoes" class="text-3xl font-extrabold text-slate-900">0</p>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-center">
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Questões Resolvidas</p>
+                    <p id="kpi-total" class="text-3xl font-bold text-slate-800">0</p>
                 </div>
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-center">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">% Acerto Global</p>
-                    <p id="kpi-percentual-geral" class="text-3xl font-extrabold text-blue-600">0%</p>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-center">
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Acerto Global</p>
+                    <p id="kpi-percent" class="text-3xl font-bold text-blue-600">0%</p>
                 </div>
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-center">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Domínio (Camada 3)</p>
-                    <p id="kpi-c3-count" class="text-3xl font-extrabold text-emerald-600">0</p>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-center">
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Assuntos na C3</p>
+                    <p id="kpi-c3" class="text-3xl font-bold text-green-600">0</p>
                 </div>
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-center">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Avisos de Alerta</p>
-                    <p id="kpi-alertas-count" class="text-3xl font-extrabold text-red-500">0</p>
-                </div>
-            </div>
-
-            <!-- Tabela Detalhada por Disciplina -->
-            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
-                <h3 class="font-bold text-slate-800 text-base">Desempenho Consolidado por Disciplina</h3>
-                <div id="desempenho-tabela-disciplinas" class="overflow-x-auto">
-                    <!-- Tabela via JS -->
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-center">
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Avisos de Atenção</p>
+                    <p id="kpi-alerta" class="text-3xl font-bold text-red-600">0</p>
                 </div>
             </div>
         </section>
 
     </main>
 
-    <!-- MOBILE BOTTOM NAVIGATION -->
-    <nav class="md:hidden flex items-center justify-around bg-slate-900 text-slate-400 border-t border-slate-800 pb-safe z-30 shrink-0 shadow-[0_-4px_12px_rgba(0,0,0,0.15)]">
-        <button onclick="switchTab('hoje')" id="mob-hoje" class="flex flex-col items-center p-2.5 mobile-nav-active">
-            <i data-lucide="sun" class="w-5 h-5 mb-0.5"></i>
-            <span class="text-[10px]">Hoje</span>
+    <!-- Mobile Bottom Nav -->
+    <nav class="md:hidden flex items-center justify-around bg-white border-t border-slate-200 pb-safe z-10 shrink-0 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+        <button onclick="switchTab('hoje')" id="mob-hoje" class="flex flex-col items-center p-3 text-slate-400 mobile-nav-active">
+            <i data-lucide="sun" class="w-6 h-6 mb-1"></i><span class="text-[10px]">Hoje</span>
         </button>
-        <button onclick="switchTab('plano')" id="mob-plano" class="flex flex-col items-center p-2.5">
-            <i data-lucide="compass" class="w-5 h-5 mb-0.5"></i>
-            <span class="text-[10px]">Plano</span>
+        <button onclick="switchTab('plano')" id="mob-plano" class="flex flex-col items-center p-3 text-slate-400">
+            <i data-lucide="calendar" class="w-6 h-6 mb-1"></i><span class="text-[10px]">Plano</span>
         </button>
-        <button onclick="switchTab('conteudos')" id="mob-conteudos" class="flex flex-col items-center p-2.5 relative">
-            <div class="bg-blue-600 text-white p-2 rounded-full -mt-4 shadow-lg shadow-blue-600/40 border-2 border-slate-900">
-                <i data-lucide="layers" class="w-4 h-4"></i>
-            </div>
-            <span class="text-[10px] mt-0.5 font-bold">Edital</span>
+        <button onclick="switchTab('conteudos')" id="mob-conteudos" class="flex flex-col items-center p-3 text-slate-400 relative">
+            <div class="absolute -top-3 bg-blue-600 text-white p-2 rounded-full shadow-lg"><i data-lucide="library" class="w-5 h-5"></i></div>
+            <span class="text-[10px] mt-6 font-bold text-blue-600">Conteúdos</span>
         </button>
-        <button onclick="switchTab('revisoes')" id="mob-revisoes" class="flex flex-col items-center p-2.5 relative">
+        <button onclick="switchTab('revisoes')" id="mob-revisoes" class="flex flex-col items-center p-3 text-slate-400 relative">
             <div class="relative">
-                <i data-lucide="repeat" class="w-5 h-5 mb-0.5"></i>
-                <span id="badge-rev-mobile" class="hidden absolute -top-1 -right-2 bg-red-500 text-white text-[9px] font-extrabold px-1.5 py-0.2 rounded-full">0</span>
+                <i data-lucide="repeat" class="w-6 h-6 mb-1"></i>
+                <span id="badge-rev-mobile" class="hidden absolute -top-1 -right-2 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">0</span>
             </div>
             <span class="text-[10px]">Revisões</span>
         </button>
-        <button onclick="switchTab('desempenho')" id="mob-desempenho" class="flex flex-col items-center p-2.5">
-            <i data-lucide="bar-chart-3" class="w-5 h-5 mb-0.5"></i>
-            <span class="text-[10px]">Análise</span>
+        <button onclick="switchTab('desempenho')" id="mob-desempenho" class="flex flex-col items-center p-3 text-slate-400">
+            <i data-lucide="bar-chart-2" class="w-6 h-6 mb-1"></i><span class="text-[10px]">Análise</span>
         </button>
     </nav>
 
-    <!-- MODAL 1: NOVA BATERIA DE AFERIÇÃO / REVISÃO -->
-    <div id="modal-afericao" class="fixed inset-0 bg-slate-950/70 hidden items-center justify-center p-4 z-50 overflow-y-auto backdrop-blur-sm">
-        <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden my-auto border border-slate-100">
-            <div class="bg-slate-900 text-white px-6 py-4 flex justify-between items-center">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="check-square" class="w-5 h-5 text-blue-400"></i>
-                    <h3 class="font-bold text-base">Registrar Bateria (Aferição)</h3>
-                </div>
-                <button onclick="fecharModalAfericao()" class="text-slate-400 hover:text-white p-1">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
+    <!-- Modal Lançar Bateria -->
+    <div id="modal-questoes" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center p-4 z-50 overflow-y-auto">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden my-auto">
+            <div class="bg-slate-50 px-5 py-4 border-b border-slate-200 flex justify-between items-center">
+                <h3 class="font-bold text-slate-800">Aferição e Revisão</h3>
+                <button onclick="fecharModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             
-            <div class="p-6 space-y-4">
+            <div class="p-5 space-y-5">
                 <input type="hidden" id="modal-disc-id">
                 <input type="hidden" id="modal-assunto-id">
                 
-                <div class="bg-blue-50 border border-blue-100 p-3.5 rounded-2xl text-center space-y-1">
-                    <p id="modal-assunto-nome" class="text-sm font-bold text-slate-800 leading-tight"></p>
-                    <p id="modal-assunto-camada" class="text-[11px] font-bold text-blue-700 uppercase tracking-wide"></p>
+                <div class="bg-blue-50 border border-blue-100 p-3 rounded-lg text-center">
+                    <p id="modal-assunto-nome" class="text-sm font-bold text-slate-700 leading-tight"></p>
+                    <p id="modal-assunto-camada" class="text-[11px] font-semibold text-blue-600 uppercase mt-1"></p>
                 </div>
                 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Questões Feitas</label>
-                        <input type="number" id="input-feitas" min="1" placeholder="Ex: 20" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl p-3 text-lg font-bold text-center focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Questões Feitas</label>
+                        <input type="number" id="input-feitas" min="1" class="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-lg p-3 text-lg font-bold text-center focus:ring-2 focus:ring-blue-500 focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Erros</label>
-                        <input type="number" id="input-erros" min="0" placeholder="Ex: 3" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl p-3 text-lg font-bold text-center focus:ring-2 focus:ring-red-500 focus:outline-none">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Erros</label>
+                        <input type="number" id="input-erros" min="0" class="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-lg p-3 text-lg font-bold text-center focus:ring-2 focus:ring-red-500 focus:outline-none">
                     </div>
                 </div>
 
-                <!-- Botões RARD de Confiança -->
+                <!-- Retenção RARD -->
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1.5">Autoavaliação / Retenção</label>
-                    <div class="grid grid-cols-3 gap-2">
-                        <button type="button" id="btn-conf-1" onclick="setConfiancaModal(1)" class="btn-conf-1 border border-slate-200 bg-slate-50 py-2.5 px-1 rounded-xl text-xs font-bold text-slate-700 flex flex-col items-center gap-1 transition">
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Nível de Retenção (Confiança)</label>
+                    <div class="flex gap-2">
+                        <button id="btn-conf-1" onclick="window.setConfianca(1)" class="flex-1 btn-conf-1 border border-slate-200 bg-slate-50 py-2 rounded-lg text-xs font-bold text-slate-600 flex flex-col items-center gap-1 transition">
                             <i data-lucide="frown" class="w-4 h-4 text-red-500"></i> Instável
                         </button>
-                        <button type="button" id="btn-conf-2" onclick="setConfiancaModal(2)" class="btn-conf-2 border border-slate-200 bg-slate-50 py-2.5 px-1 rounded-xl text-xs font-bold text-slate-700 flex flex-col items-center gap-1 transition btn-conf-active">
+                        <button id="btn-conf-2" onclick="window.setConfianca(2)" class="flex-1 btn-conf-2 border border-slate-200 bg-slate-50 py-2 rounded-lg text-xs font-bold text-slate-600 flex flex-col items-center gap-1 transition btn-conf-active">
                             <i data-lucide="meh" class="w-4 h-4 text-amber-500"></i> Consolidando
                         </button>
-                        <button type="button" id="btn-conf-3" onclick="setConfiancaModal(3)" class="btn-conf-3 border border-slate-200 bg-slate-50 py-2.5 px-1 rounded-xl text-xs font-bold text-slate-700 flex flex-col items-center gap-1 transition">
-                            <i data-lucide="smile" class="w-4 h-4 text-emerald-500"></i> Estável
+                        <button id="btn-conf-3" onclick="window.setConfianca(3)" class="flex-1 btn-conf-3 border border-slate-200 bg-slate-50 py-2 rounded-lg text-xs font-bold text-slate-600 flex flex-col items-center gap-1 transition">
+                            <i data-lucide="smile" class="w-4 h-4 text-green-500"></i> Estável
                         </button>
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Observações / Pontos de Erro</label>
-                    <input type="text" id="input-obs" placeholder="Ex: Pegadinha sobre exceções do artigo 5º..." class="w-full bg-slate-50 border border-slate-300 text-slate-800 rounded-xl p-3 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Dificuldade Anotada (Opcional)</label>
+                    <input type="text" id="input-obs" placeholder="Ex: Errei a diferença entre anulação e revogação..." class="w-full bg-slate-50 border border-slate-200 text-slate-700 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
                 </div>
             </div>
-
             <div class="p-4 bg-slate-50 border-t border-slate-200 flex gap-3">
-                <button onclick="fecharModalAfericao()" class="flex-1 bg-white border border-slate-300 text-slate-700 py-3 rounded-xl font-bold text-sm hover:bg-slate-100 transition">Cancelar</button>
-                <button onclick="salvarBateriaModal()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold text-sm transition shadow-md shadow-blue-600/30">Salvar Aferição</button>
+                <button onclick="fecharModal()" class="flex-1 bg-white border border-slate-300 text-slate-700 py-2.5 rounded-lg font-bold text-sm hover:bg-slate-50 transition">Cancelar</button>
+                <button onclick="salvarBateria()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg font-bold text-sm transition shadow-sm">Salvar Aferição</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL 2: HISTÓRICO COMPLETO DO ASSUNTO -->
-    <div id="modal-historico" class="fixed inset-0 bg-slate-950/70 hidden items-center justify-center p-4 z-50 backdrop-blur-sm">
-        <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-slate-100">
-            <div class="bg-slate-900 text-white px-6 py-4 flex justify-between items-center shrink-0">
+    <!-- Modal Histórico -->
+    <div id="modal-historico" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="bg-slate-50 px-5 py-4 border-b border-slate-200 flex justify-between items-center shrink-0">
                 <div>
-                    <h3 class="font-bold text-base">Histórico de Baterias Independentes</h3>
-                    <p id="hist-assunto-nome" class="text-xs text-blue-400 font-medium"></p>
+                    <h3 class="font-bold text-slate-800">Histórico de Baterias</h3>
+                    <p id="hist-assunto-nome" class="text-[11px] font-semibold text-slate-500 uppercase mt-0.5"></p>
                 </div>
-                <button onclick="fecharModalHistorico()" class="text-slate-400 hover:text-white p-1">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
+                <button onclick="fecharModalHistorico()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
-
-            <div class="p-6 flex-1 overflow-y-auto bg-slate-50 space-y-4">
-                <div class="grid grid-cols-3 gap-3">
-                    <div class="bg-white p-3 rounded-xl border border-slate-200 text-center shadow-sm">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase">Total Feitas</p>
-                        <p id="hist-total-q" class="text-lg font-extrabold text-slate-900">0</p>
-                    </div>
-                    <div class="bg-white p-3 rounded-xl border border-slate-200 text-center shadow-sm">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase">Aproveitamento</p>
-                        <p id="hist-geral-perc" class="text-lg font-extrabold text-blue-600">0%</p>
-                    </div>
-                    <div class="bg-white p-3 rounded-xl border border-slate-200 text-center shadow-sm">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase">Camada Atual</p>
-                        <p id="hist-camada-atual" class="text-lg font-extrabold text-slate-900">C1</p>
-                    </div>
-                </div>
-
-                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider pt-2 flex items-center gap-1.5">
-                    <i data-lucide="history" class="w-4 h-4"></i> Linha do Tempo das Baterias
-                </h4>
-                
-                <div id="hist-lista-baterias" class="space-y-3">
-                    <!-- Renderizado via JS -->
-                </div>
+            <div class="p-5 flex-1 overflow-y-auto bg-slate-50/50">
+                <div id="lista-baterias" class="space-y-3"></div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL 3: GERENCIAR OBJETIVOS E ID SYNC -->
-    <div id="modal-config" class="fixed inset-0 bg-slate-950/70 hidden items-center justify-center p-4 z-50 backdrop-blur-sm">
-        <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden border border-slate-100">
-            <div class="bg-slate-900 text-white px-6 py-4 flex justify-between items-center">
-                <h3 class="font-bold text-base flex items-center gap-2"><i data-lucide="settings" class="w-4 h-4 text-blue-400"></i> Configurações & Objetivos</h3>
-                <button onclick="fecharModalConfig()" class="text-slate-400 hover:text-white p-1">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-            
-            <div class="p-6 space-y-5">
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Selecione ou Adicione Concurso</label>
-                    <select id="select-objetivos-config" onchange="trocarObjetivoAtivo(this.value)" class="w-full bg-slate-50 border border-slate-300 text-slate-800 rounded-xl p-3 text-sm font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                        <!-- Preenchido via JS -->
-                    </select>
-                </div>
-
-                <div class="flex gap-2">
-                    <input type="text" id="input-novo-objetivo" placeholder="Ex: TJ-PI (Oficial de Justiça)" class="flex-1 bg-slate-50 border border-slate-300 text-slate-800 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                    <button onclick="criarNovoObjetivo()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition">
-                        + Criar
-                    </button>
-                </div>
-
-                <hr class="border-slate-200">
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Código de Sincronização (ID)</label>
-                    <p class="text-[11px] text-slate-500 mb-2">Use este mesmo código em outros tablets ou celulares para acessar seu banco de dados na nuvem.</p>
-                    <div class="flex gap-2">
-                        <input type="text" id="input-sync-id" class="flex-1 bg-slate-50 border border-slate-300 text-slate-800 font-mono text-xs rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                        <button onclick="salvarNovoUserID()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-3 py-2 rounded-xl transition">
-                            Atualizar
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 4: PRÉVIA E RESTAURAÇÃO DE BACKUP JSON -->
-    <div id="modal-preview-backup" class="fixed inset-0 bg-slate-950/70 hidden items-center justify-center p-4 z-50 backdrop-blur-sm">
-        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden border border-slate-100">
-            <div class="bg-amber-500 text-slate-950 px-6 py-4 flex justify-between items-center">
-                <h3 class="font-extrabold text-base flex items-center gap-2"><i data-lucide="shield-alert" class="w-5 h-5"></i> Confirmar Restauração de Backup</h3>
-                <button onclick="fecharModalPreviewBackup()" class="text-slate-950 hover:opacity-75 p-1">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-            
-            <div class="p-6 space-y-4">
-                <p class="text-xs text-slate-600">Um arquivo de backup válido foi identificado. Analise a prévia dos conteúdos antes de aplicar a substituição:</p>
-                
-                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2 text-xs">
-                    <div class="flex justify-between border-b border-slate-200 pb-1.5">
-                        <span class="font-bold text-slate-500">Versão do Schema:</span>
-                        <span id="prev-schema" class="font-bold text-slate-800">--</span>
-                    </div>
-                    <div class="flex justify-between border-b border-slate-200 pb-1.5">
-                        <span class="font-bold text-slate-500">Data do Backup:</span>
-                        <span id="prev-data" class="font-bold text-slate-800">--</span>
-                    </div>
-                    <div class="flex justify-between border-b border-slate-200 pb-1.5">
-                        <span class="font-bold text-slate-500">Total de Objetivos/Concursos:</span>
-                        <span id="prev-objetivos" class="font-bold text-blue-600">0</span>
-                    </div>
-                    <div class="flex justify-between border-b border-slate-200 pb-1.5">
-                        <span class="font-bold text-slate-500">Total de Disciplinas:</span>
-                        <span id="prev-disciplinas" class="font-bold text-slate-800">0</span>
-                    </div>
-                    <div class="flex justify-between border-b border-slate-200 pb-1.5">
-                        <span class="font-bold text-slate-500">Total de Assuntos:</span>
-                        <span id="prev-assuntos" class="font-bold text-slate-800">0</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="font-bold text-slate-500">Baterias Registradas:</span>
-                        <span id="prev-baterias" class="font-bold text-emerald-600">0</span>
-                    </div>
-                </div>
-
-                <div class="bg-amber-50 border border-amber-200 text-amber-900 p-3 rounded-xl text-xs flex gap-2">
-                    <i data-lucide="info" class="w-4 h-4 shrink-0 text-amber-600 mt-0.5"></i>
-                    <span><strong>Nota de Segurança:</strong> Um backup de emergência dos seus dados atuais será salvo no cache local antes da substituição.</span>
-                </div>
-            </div>
-
-            <div class="p-4 bg-slate-50 border-t border-slate-200 flex gap-3">
-                <button onclick="fecharModalPreviewBackup()" class="flex-1 bg-white border border-slate-300 text-slate-700 py-3 rounded-xl font-bold text-sm hover:bg-slate-100 transition">Cancelar</button>
-                <button onclick="executarRestauracaoConfirmada()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 py-3 rounded-xl font-extrabold text-sm transition shadow-md">Confirmar e Aplicar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MAIN APP SCRIPT -->
+    <!-- CORE JAVASCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
-        // CONFIGURAÇÃO DO FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyACBwgANNYIGeZWL14U4v434gfDZUnfouI",
             authDomain: "app-de-estudo-81b2c.firebaseapp.com",
-            projectId: "app-de-estudo-81b2c",
-            storageBucket: "app-de-estudo-81b2c.firebasestorage.app",
-            messagingSenderId: "420622769575",
-            appId: "1:420622769575:web:b0631945d9ed6fe3e86a82"
+            projectId: "app-de-estudo-81b2c"
         };
 
-        // ESTADO GLOBAL DA APLICAÇÃO
         let db = null;
         let docRef = null;
         let unsubscribe = null;
-        let isConfigInvalid = false;
-        let currentConfiancaModal = 2; // Default RARD
-        let backupDataPendente = null;
-
-        // Estrutura de Dados V2 (Normalizada)
+        
         let baseDados = {
-            schemaVersion: 2,
-            objetivoAtivo: 'trt-22',
-            objetivos: [
-                {
-                    id: 'trt-22',
-                    nome: 'TRT 22ª Região (Técnico / Analista)',
-                    disciplinas: [],
-                    cicloIndex: 0
-                }
-            ],
-            configuracoes: { metaHorasSemanal: 20 }
+            objetivoAtivo: 'default-obj',
+            objetivos: [], revisoes: [], cadernoErros: [], configuracoes: { metaHoras: 20 }
+        };
+        let disciplinasAbertas = new Set();
+        let currentConfianca = 2;
+
+        // NAVEGAÇÃO
+        window.switchTab = (tabName) => {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabName).classList.add('active');
+            
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('nav-active'));
+            document.getElementById('nav-' + tabName)?.classList.add('nav-active');
+            
+            ['mob-hoje', 'mob-plano', 'mob-revisoes', 'mob-desempenho'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) { el.classList.remove('mobile-nav-active'); el.classList.add('text-slate-400'); }
+            });
+            if(tabName !== 'conteudos') {
+                const mobEl = document.getElementById('mob-' + tabName);
+                if(mobEl) { mobEl.classList.add('mobile-nav-active'); mobEl.classList.remove('text-slate-400'); }
+            }
         };
 
-        let disciplinasAbertasUI = new Set();
-
-        // 1. VALIDAÇÃO DA CONFIGURAÇÃO DO FIREBASE
-        function checarConfiguracaoFirebase() {
-            const placeholders = ["COLE_AQUI", "YOUR_API_KEY", "INSERT_KEY", "YOUR_PROJECT_ID"];
-            const isPlaceholder = placeholders.some(p => 
-                firebaseConfig.apiKey.includes(p) || firebaseConfig.projectId.includes(p)
-            );
-            
-            if (isPlaceholder || !firebaseConfig.apiKey) {
-                isConfigInvalid = true;
-                document.getElementById('firebase-config-banner').classList.remove('hidden');
-                return false;
-            }
-            return true;
+        // --- SISTEMA DE MIGRAÇÃO ---
+        function realizarMigracaoEstrutural(dadosBrutos) {
+            if (dadosBrutos.objetivoAtivo && dadosBrutos.objetivos) return dadosBrutos;
+            return {
+                objetivoAtivo: 'obj-migrado',
+                objetivos: [{ id: 'obj-migrado', nome: 'Concurso Atual', disciplinas: dadosBrutos.disciplinas || [], cicloIndex: dadosBrutos.cicloIndex || 0 }],
+                revisoes: [], cadernoErros: [], configuracoes: { metaHoras: 20 }
+            };
         }
 
-        // 2. NORMALIZAÇÃO E MIGRAÇÃO SEGURA DOS DADOS (V2)
-        function normalizarDados(dadosBrutos) {
-            if (!dadosBrutos || typeof dadosBrutos !== 'object') {
-                return baseDados;
+        function getObjetivoAtivo() {
+            if (!baseDados.objetivos || baseDados.objetivos.length === 0) {
+                baseDados.objetivos = [{ id: 'default-obj', nome: 'Meu Concurso', disciplinas: [], cicloIndex: 0 }];
+                baseDados.objetivoAtivo = 'default-obj';
             }
-
-            let dadosNormalizados = { ...dadosBrutos };
-            dadosNormalizados.schemaVersion = Math.max(dadosBrutos.schemaVersion || 1, 2);
-
-            // Migração da estrutura antiga { disciplinas: [...] } para Múltiplos Objetivos
-            if (!dadosNormalizados.objetivos || !Array.isArray(dadosNormalizados.objetivos)) {
-                console.log("Executando migração de estrutura V1 -> V2 (Objetivos).");
-                const disciplinasLegadas = Array.isArray(dadosBrutos.disciplinas) ? dadosBrutos.disciplinas : [];
-                dadosNormalizados.objetivoAtivo = 'concurso-migrado';
-                dadosNormalizados.objetivos = [
-                    {
-                        id: 'concurso-migrado',
-                        nome: 'Concurso Atual (Migrado)',
-                        disciplinas: disciplinasLegadas,
-                        cicloIndex: dadosBrutos.cicloIndex || 0
-                    }
-                ];
-            }
-
-            // Normalização interna de cada Objetivo, Disciplina e Assunto
-            dadosNormalizados.objetivos.forEach(obj => {
-                if (!obj.id) obj.id = 'obj_' + Math.random().toString(36).substring(2, 7);
-                if (!obj.nome) obj.nome = 'Concurso Sem Nome';
-                if (!Array.isArray(obj.disciplinas)) obj.disciplinas = [];
-                if (typeof obj.cicloIndex !== 'number') obj.cicloIndex = 0;
-
-                obj.disciplinas.forEach(disc => {
-                    if (!disc.id) disc.id = 'disc_' + Math.random().toString(36).substring(2, 7);
-                    if (!disc.nome) disc.nome = 'Disciplina Sem Nome';
-                    if (!Array.isArray(disc.assuntos)) disc.assuntos = [];
-
-                    disc.assuntos.forEach(assunto => {
-                        if (!assunto.id) assunto.id = 'assunto_' + Math.random().toString(36).substring(2, 7);
-                        if (!assunto.nome) assunto.nome = 'Assunto Sem Nome';
-                        if (!Array.isArray(assunto.historico)) assunto.historico = [];
-                        
-                        // Garante avaliação da camada atual baseada no histórico
-                        recalcularEstadoAssunto(assunto);
-                    });
-                });
-            });
-
-            return dadosNormalizados;
+            return baseDados.objetivos.find(o => o.id === baseDados.objetivoAtivo) || baseDados.objetivos[0];
         }
 
-        // 3. ENGINE MÉTODO CAMADAS (REGRAS ESTRITAS)
-        function calcularCamadaBateria(percentual) {
-            // Regra: <75% = C0 (sem avanço), 75%-84.99% = C1, 85%-90% = C2, >90% = C3
-            if (percentual > 90) return 3;
-            if (percentual >= 85) return 2;
-            if (percentual >= 75) return 1;
-            return 0;
-        }
+        // --- FIREBASE ---
+        let userId = localStorage.getItem('estudei_tablet_id') || ('user_' + Math.random().toString(36).substr(2, 6).toUpperCase());
+        localStorage.setItem('estudei_tablet_id', userId);
 
-        function recalcularEstadoAssunto(assunto) {
-            if (!assunto.historico || assunto.historico.length === 0) {
-                assunto.camadaAtual = 0;
-                assunto.proximaAcao = { status: 'neutro', msg: 'Aguardando 1ª aferição.' };
-                return;
-            }
-
-            // Descobre a MAIOR camada alcançada em QUALQUER bateria (Princípio do avanço não sequencial e sem regressão)
-            let maiorCamadaConquistada = 0;
-            assunto.historico.forEach(bat => {
-                const cBateria = calcularCamadaBateria(bat.perc);
-                if (cBateria > maiorCamadaConquistada) {
-                    maiorCamadaConquistada = cBateria;
-                }
-            });
-
-            // Camada não pode regredir
-            assunto.camadaAtual = Math.max(assunto.camadaAtual || 0, maiorCamadaConquistada);
-
-            // Avalia o desempenho da ÚLTIMA bateria para a mensagem de Próxima Ação
-            const ultimaBateria = assunto.historico[assunto.historico.length - 1];
-            const metaCamadaAtual = getMetaText(assunto.camadaAtual);
-
-            if (ultimaBateria.perc > 90 && assunto.camadaAtual === 3) {
-                assunto.proximaAcao = { status: 'sucesso', msg: 'Camada 3 Concluída (>90%). Manter revisões RARD.' };
-            } else if (ultimaBateria.perc >= 75 && assunto.camadaAtual < 3) {
-                assunto.proximaAcao = { status: 'sucesso', msg: `Meta atingida! Avançou/Mantém C${assunto.camadaAtual}.` };
-            } else if (ultimaBateria.perc < 65) {
-                assunto.proximaAcao = { status: 'alerta', msg: `Atenção: Queda no último teste (${ultimaBateria.perc}%). Meta C${assunto.camadaAtual}: ${metaCamadaAtual}.` };
-            } else {
-                assunto.proximaAcao = { status: 'neutro', msg: `Continuar na C${assunto.camadaAtual}. Meta: ${metaCamadaAtual}.` };
-            }
-        }
-
-        function getMetaText(camada) {
-            if (camada === 1) return "75%";
-            if (camada === 2) return "85%";
-            if (camada === 3) return ">90%";
-            return "75%";
-        }
-
-        // 4. ENGINE REVISÕES RARD
-        function calcularProximaRevisaoRARD(confianca, percentual) {
-            // Regra RARD:
-            // Confiança 1 (Instável) OU perc < 65% -> 1 dia
-            // Confiança 2 (Consolidando) OU perc < 85% -> 7 dias
-            // Confiança 3 (Estável) E perc >= 85% -> 21 dias
-            let dias = 7;
-            if (confianca === 1 || percentual < 65) {
-                dias = 1;
-            } else if (confianca === 2 || percentual < 85) {
-                dias = 7;
-            } else if (confianca === 3 && percentual >= 85) {
-                dias = 21;
-            }
-
-            const proximaData = new Date();
-            proximaData.setDate(proximaData.getDate() + dias);
-            return proximaData.toISOString();
-        }
-
-        // 5. IDENTIFICAÇÃO E NUVEM (FIREBASE / LOCAL)
-        let userId = localStorage.getItem('estudei_tablet_id');
-        if (!userId) {
-            userId = 'user_' + Math.random().toString(36).substring(2, 8).toUpperCase();
-            localStorage.setItem('estudei_tablet_id', userId);
-        }
-
-        function iniciarConexaoDados() {
-            document.getElementById('display-user-id').innerText = userId;
-            document.getElementById('input-sync-id').value = userId;
-
-            if (!checarConfiguracaoFirebase()) {
-                mostrarStatusConexao(false, "Modo Local");
-                carregarLocalCache();
-                return;
-            }
-
+        function iniciarFirebase() {
             try {
-                if (!db) {
-                    const app = initializeApp(firebaseConfig);
-                    db = getFirestore(app);
-                }
-                if (unsubscribe) unsubscribe();
-
-                docRef = doc(db, "dados_estudo_v2", userId);
-                mostrarStatusConexao(false, "Conectando...");
-
+                if(!db) { const app = initializeApp(firebaseConfig); db = getFirestore(app); }
+                if(unsubscribe) unsubscribe(); 
+                docRef = doc(db, "dados_estudo_pro", userId); 
                 unsubscribe = onSnapshot(docRef, (docSnap) => {
-                    if (docSnap.exists()) {
-                        baseDados = normalizarDados(docSnap.data());
-                        salvarCacheLocal();
-                        atualizarInterface();
-                        mostrarStatusConexao(true, "Sincronizado");
-                    } else {
-                        // Documento novo na nuvem -> usa cache local se existir
-                        carregarLocalCache();
-                        salvarNaNuvem();
-                    }
-                }, (error) => {
-                    console.error("Erro Firestore:", error);
-                    mostrarStatusConexao(false, "Offline (Local)");
-                    carregarLocalCache();
-                });
-            } catch (err) {
-                console.error("Erro Init Firebase:", err);
-                mostrarStatusConexao(false, "Offline (Local)");
-                carregarLocalCache();
-            }
+                    if (docSnap.exists()) { baseDados = realizarMigracaoEstrutural(docSnap.data()); atualizarTela(); mostrarStatus(true); }
+                    else { salvarNaNuvem(); }
+                }, () => { mostrarStatus(false); });
+            } catch (error) { mostrarStatus(false); }
         }
+        
+        iniciarFirebase();
 
-        function mostrarStatusConexao(online, texto) {
-            const statusHtml = online
-                ? `<i data-lucide="cloud-check" class="w-4 h-4 text-emerald-400"></i> <span>${texto}</span>`
-                : `<i data-lucide="cloud-off" class="w-4 h-4 text-amber-400"></i> <span>${texto}</span>`;
-
-            document.getElementById('cloud-status-desktop').innerHTML = statusHtml;
-            const mobStatus = document.getElementById('cloud-status-mobile');
-            if (mobStatus) mobStatus.innerHTML = online 
-                ? `<i data-lucide="cloud-check" class="w-4 h-4 text-emerald-400"></i>` 
-                : `<i data-lucide="cloud-off" class="w-4 h-4 text-amber-400"></i>`;
-            
+        function mostrarStatus(online) {
+            const statusHtm = online 
+                ? `<i data-lucide="cloud-check" class="w-4 h-4 text-green-500"></i> <span class="hidden md:inline">Sincronizado</span>`
+                : `<i data-lucide="cloud-off" class="w-4 h-4 text-slate-400"></i> <span class="hidden md:inline">Offline</span>`;
+            document.getElementById('cloud-status').innerHTML = statusHtm;
+            const mob = document.getElementById('cloud-status-mobile');
+            if(mob) mob.innerHTML = online ? `<i data-lucide="cloud-check" class="w-4 h-4 text-green-500"></i>` : `<i data-lucide="cloud-off" class="w-4 h-4 text-slate-400"></i>`;
             lucide.createIcons();
         }
 
-        function carregarLocalCache() {
-            const cache = localStorage.getItem(`estudei_dados_v2_${userId}`);
-            if (cache) {
-                try {
-                    baseDados = normalizarDados(JSON.parse(cache));
-                } catch (e) {
-                    console.error("Erro parse local:", e);
-                }
-            }
-            atualizarInterface();
+        async function salvarDados() {
+            localStorage.setItem(`estudei_dados_pro_${userId}`, JSON.stringify(baseDados));
+            if (db && docRef) { try { await salvarNaNuvem(); } catch(e) {} }
+            atualizarTela();
         }
 
-        function salvarCacheLocal() {
-            localStorage.setItem(`estudei_dados_v2_${userId}`, JSON.stringify(baseDados));
-        }
+        async function salvarNaNuvem() { await setDoc(docRef, baseDados); }
 
-        async function salvarEstadoGeral() {
-            salvarCacheLocal();
-            atualizarInterface();
-            if (db && docRef && !isConfigInvalid) {
-                try {
-                    await salvarNaNuvem();
-                } catch (e) {
-                    console.warn("Falha no save em nuvem, mantido local:", e);
-                }
-            }
-        }
-
-        async function salvarNaNuvem() {
-            if (!docRef) return;
-            await setDoc(docRef, baseDados, { merge: true });
-        }
-
-        // 6. OPERAÇÕES DE CONCURSO/OBJETIVO
-        function getObjetivoAtivoObj() {
-            if (!baseDados.objetivos || baseDados.objetivos.length === 0) {
-                baseDados.objetivos = [{ id: 'default', nome: 'Meu Concurso', disciplinas: [], cicloIndex: 0 }];
-                baseDados.objetivoAtivo = 'default';
-            }
-            let obj = baseDados.objetivos.find(o => o.id === baseDados.objetivoAtivo);
-            if (!obj) {
-                obj = baseDados.objetivos[0];
-                baseDados.objetivoAtivo = obj.id;
-            }
-            return obj;
-        }
-
-        window.trocarObjetivoAtivo = (idObj) => {
-            baseDados.objetivoAtivo = idObj;
-            salvarEstadoGeral();
-        };
-
-        window.criarNovoObjetivo = () => {
-            const input = document.getElementById('input-novo-objetivo');
-            const nome = input.value.trim();
-            if (!nome) return;
-
-            const novoId = 'obj_' + Date.now();
-            baseDados.objetivos.push({
-                id: novoId,
-                nome: nome,
-                disciplinas: [],
-                cicloIndex: 0
-            });
-            baseDados.objetivoAtivo = novoId;
-            input.value = '';
-            fecharModalConfig();
-            salvarEstadoGeral();
-        };
-
-        window.salvarNovoUserID = () => {
-            const val = document.getElementById('input-sync-id').value.trim();
-            if (val && val !== userId) {
-                userId = val;
-                localStorage.setItem('estudei_tablet_id', userId);
-                fecharModalConfig();
-                iniciarConexaoDados();
-            }
-        };
-
-        // 7. BACKUP & RESTAURAR (JSON)
-        window.exportarBackupJSON = () => {
-            const payload = {
-                appName: "Estudei — Método Camadas",
-                schemaVersion: baseDados.schemaVersion,
-                timestamp: new Date().toISOString(),
-                userId: userId,
-                data: baseDados
-            };
-
-            const jsonStr = JSON.stringify(payload, null, 2);
-            const blob = new Blob([jsonStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
+        window.exportarBackup = () => {
             const a = document.createElement('a');
-            a.href = url;
-            a.download = `backup_estudei_${userId}_${new Date().toISOString().split('T')[0]}.json`;
+            a.href = URL.createObjectURL(new Blob([JSON.stringify(baseDados, null, 2)], { type: "application/json" }));
+            a.download = `estudei_backup_${new Date().toISOString().split('T')[0]}.json`;
             a.click();
-            URL.revokeObjectURL(url);
         };
 
-        window.processarArquivoImportacao = (event) => {
+        window.importarBackup = (event) => {
             const file = event.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
-            reader.onload = (e) => {
+            reader.onload = async (e) => {
                 try {
                     const parsed = JSON.parse(e.target.result);
-                    // Validação de formato de backup
-                    const dadosParaRestaurar = parsed.data ? parsed.data : parsed;
-                    
-                    if (!dadosParaRestaurar.objetivos && !dadosParaRestaurar.disciplinas) {
-                        alert("Arquivo JSON inválido. A estrutura não corresponde ao backup do Estudei.");
-                        return;
+                    if(confirm("Importação substituirá os dados atuais. Deseja continuar?")) {
+                        baseDados = realizarMigracaoEstrutural(parsed);
+                        await salvarDados();
+                        alert("Restaurado!");
                     }
-
-                    backupDataPendente = normalizarDados(dadosParaRestaurar);
-
-                    // Contadores para prévia
-                    let totObj = backupDataPendente.objetivos.length;
-                    let totDisc = 0, totAss = 0, totBat = 0;
-
-                    backupDataPendente.objetivos.forEach(o => {
-                        totDisc += o.disciplinas.length;
-                        o.disciplinas.forEach(d => {
-                            totAss += d.assuntos.length;
-                            d.assuntos.forEach(a => {
-                                totBat += a.historico ? a.historico.length : 0;
-                            });
-                        });
-                    });
-
-                    // Preenche modal de prévia
-                    document.getElementById('prev-schema').innerText = `V${parsed.schemaVersion || 2}`;
-                    document.getElementById('prev-data').innerText = parsed.timestamp ? new Date(parsed.timestamp).toLocaleString('pt-BR') : 'Desconhecida';
-                    document.getElementById('prev-objetivos').innerText = totObj;
-                    document.getElementById('prev-disciplinas').innerText = totDisc;
-                    document.getElementById('prev-assuntos').innerText = totAss;
-                    document.getElementById('prev-baterias').innerText = totBat;
-
-                    // Abre modal de prévia
-                    document.getElementById('modal-preview-backup').classList.remove('hidden');
-                    document.getElementById('modal-preview-backup').classList.add('flex');
-
-                } catch (err) {
-                    alert("Erro ao ler o arquivo JSON. Certifique-se de que é um arquivo válido.");
-                }
-                event.target.value = '';
+                } catch(error) { alert("Formato inválido."); }
             };
             reader.readAsText(file);
         };
 
-        window.executarRestauracaoConfirmada = async () => {
-            if (!backupDataPendente) return;
+        // --- LÓGICA DE CAMADAS & RARD ---
+        function getMetaText(camada) {
+            if(camada === 1) return "75%";
+            if(camada === 2) return "85%";
+            if(camada === 3) return ">90%";
+            return "75%";
+        }
 
-            // Salva backup de emergência local antes de sobrescrever
-            localStorage.setItem(`estudei_backup_emergencia_${Date.now()}`, JSON.stringify(baseDados));
+        function avaliarProgresso(assunto, percentualBateria) {
+            let metaVal = 75, limiteAlerta = 65, atingiuMeta = false;
+            if (assunto.camadaAtual === 1) { atingiuMeta = percentualBateria >= 75; limiteAlerta = 65; } 
+            else if (assunto.camadaAtual === 2) { atingiuMeta = percentualBateria >= 85; limiteAlerta = 75; } 
+            else { atingiuMeta = percentualBateria > 90; limiteAlerta = 80; }
 
-            baseDados = backupDataPendente;
-            backupDataPendente = null;
+            let status = 'neutro', msgAcao = "", avancou = false;
 
-            fecharModalPreviewBackup();
-            await salvarEstadoGeral();
-            alert("Restauração de backup realizada com sucesso!");
+            if (atingiuMeta) {
+                if (assunto.camadaAtual < 3) { msgAcao = `Avançou! Próxima Meta: ${getMetaText(assunto.camadaAtual + 1)}.`; status = 'sucesso'; avancou = true; } 
+                else { msgAcao = `Camada 3 MANTIDA (>90%).`; status = 'sucesso'; }
+            } else if (percentualBateria <= limiteAlerta) {
+                msgAcao = `ATENÇÃO: Queda brusca. Meta: ${getMetaText(assunto.camadaAtual)}.`; status = 'alerta'; 
+            } else { msgAcao = `Manter constância. Meta: ${getMetaText(assunto.camadaAtual)}.`; status = 'neutro'; }
+            
+            return { avancou, status, msgAcao };
+        }
+
+        window.setConfianca = (val) => {
+            currentConfianca = val;
+            [1,2,3].forEach(i => document.getElementById('btn-conf-'+i).classList.remove('btn-conf-active'));
+            document.getElementById('btn-conf-'+val).classList.add('btn-conf-active');
         };
 
-        window.fecharModalPreviewBackup = () => {
-            document.getElementById('modal-preview-backup').classList.add('hidden');
-            document.getElementById('modal-preview-backup').classList.remove('flex');
-            backupDataPendente = null;
-        };
-
-        // 8. INTERFACE & MODAIS DE OPERAÇÃO
-        window.switchTab = (tabId) => {
-            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-            document.getElementById('tab-' + tabId).classList.add('active');
-
-            // Desktop Menu
-            document.querySelectorAll('aside nav button').forEach(b => {
-                b.className = "w-full flex items-center gap-3 px-5 py-3 text-sm font-medium text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 transition text-left";
-            });
-            const btnDesk = document.getElementById('nav-' + tabId);
-            if (btnDesk) btnDesk.className = "nav-item-active w-full flex items-center gap-3 px-5 py-3 text-sm font-medium transition text-left";
-
-            // Mobile Menu
-            ['mob-hoje', 'mob-plano', 'mob-conteudos', 'mob-revisoes', 'mob-desempenho'].forEach(id => {
-                const btn = document.getElementById(id);
-                if (btn) btn.classList.remove('mobile-nav-active');
-            });
-            const btnMob = document.getElementById('mob-' + tabId);
-            if (btnMob) btnMob.classList.add('mobile-nav-active');
-        };
-
-        window.abrirModalConfig = () => {
-            const select = document.getElementById('select-objetivos-config');
-            select.innerHTML = baseDados.objetivos.map(o => `
-                <option value="${o.id}" ${o.id === baseDados.objetivoAtivo ? 'selected' : ''}>${o.nome}</option>
-            `).join('');
-
-            document.getElementById('modal-config').classList.remove('hidden');
-            document.getElementById('modal-config').classList.add('flex');
-        };
-
-        window.fecharModalConfig = () => {
-            document.getElementById('modal-config').classList.add('hidden');
-            document.getElementById('modal-config').classList.remove('flex');
-        };
-
-        window.adicionarDisciplinaPrompt = () => {
-            const nome = prompt("Nome da Nova Disciplina (ex: Direito Administrativo):");
-            if (!nome) return;
-            const obj = getObjetivoAtivoObj();
-            obj.disciplinas.push({
-                id: 'disc_' + Date.now(),
-                nome: nome.trim(),
-                assuntos: []
-            });
-            salvarEstadoGeral();
-        };
-
-        window.adicionarAssuntoPrompt = (discId, event) => {
-            if (event) event.stopPropagation();
-            const nome = prompt("Nome do Assunto (ex: Atos Administrativos - Espécies):");
-            if (!nome) return;
-
-            const obj = getObjetivoAtivoObj();
+        window.adiarRevisao = (discId, assuntoId, diasAdd) => {
+            const obj = getObjetivoAtivo();
             const disc = obj.disciplinas.find(d => d.id === discId);
-            if (!disc) return;
+            const assunto = disc.assuntos.find(a => a.id === assuntoId);
+            
+            let dataAtual = new Date(assunto.proximaRevisao);
+            if(isNaN(dataAtual.getTime())) dataAtual = new Date(); 
+            
+            const hoje = new Date();
+            if(dataAtual < hoje) dataAtual = hoje;
+            
+            dataAtual.setDate(dataAtual.getDate() + diasAdd);
+            assunto.proximaRevisao = dataAtual.toISOString();
+            salvarDados();
+        };
 
-            disc.assuntos.push({
-                id: 'assunto_' + Date.now(),
-                nome: nome.trim(),
-                camadaAtual: 0,
-                proximaAcao: { status: 'neutro', msg: 'Aguardando 1ª aferição.' },
-                proximaRevisao: null,
-                historico: []
+        // --- MANIPULAÇÃO UI ---
+        window.toggleDisciplina = (id) => {
+            if (disciplinasAbertas.has(id)) disciplinasAbertas.delete(id); else disciplinasAbertas.add(id);
+            atualizarTela();
+        };
+
+        window.adicionarDisciplina = () => {
+            const nome = prompt("Nova Disciplina:");
+            if (!nome) return;
+            getObjetivoAtivo().disciplinas.push({ id: Date.now().toString(), nome, assuntos: [] });
+            salvarDados();
+        };
+
+        window.adicionarAssunto = (discId, event) => {
+            event.stopPropagation();
+            const nome = prompt("Novo Assunto:");
+            if (!nome) return;
+            getObjetivoAtivo().disciplinas.find(d => d.id === discId).assuntos.push({ 
+                id: Date.now().toString(), nome, camadaAtual: 1,
+                proximaAcao: { status: 'neutro', msg: "Aguardando 1ª aferição." }, historico: [],
+                nivelConfianca: 2, proximaRevisao: new Date().toISOString()
             });
-            disciplinasAbertasUI.add(discId);
-            salvarEstadoGeral();
+            disciplinasAbertas.add(discId); salvarDados();
         };
 
-        window.toggleDisciplinaUI = (discId) => {
-            if (disciplinasAbertasUI.has(discId)) {
-                disciplinasAbertasUI.delete(discId);
-            } else {
-                disciplinasAbertasUI.add(discId);
-            }
-            atualizarInterface();
-        };
+        // ARQUITETURA BLINDADA: APENAS RECEBE IDs
+        window.abrirModalQuestoes = (discId, assuntoId) => {
+            const obj = getObjetivoAtivo();
+            const disc = obj.disciplinas.find(d => d.id === discId);
+            const assunto = disc.assuntos.find(a => a.id === assuntoId);
 
-        window.avancarRodizioCiclo = () => {
-            const obj = getObjetivoAtivoObj();
-            if (!obj.disciplinas || obj.disciplinas.length === 0) return;
-            obj.cicloIndex = (obj.cicloIndex + 1) % obj.disciplinas.length;
-            salvarEstadoGeral();
-        };
-
-        // Modal de Aferição
-        window.setConfiancaModal = (val) => {
-            currentConfiancaModal = val;
-            [1, 2, 3].forEach(i => {
-                const btn = document.getElementById('btn-conf-' + i);
-                btn.classList.remove('btn-conf-active');
-            });
-            document.getElementById('btn-conf-' + val).classList.add('btn-conf-active');
-        };
-
-        window.abrirModalAfericao = (discId, assuntoId, nomeAssunto, camadaAtual) => {
             document.getElementById('modal-disc-id').value = discId;
             document.getElementById('modal-assunto-id').value = assuntoId;
-            document.getElementById('modal-assunto-nome').innerText = nomeAssunto;
-            document.getElementById('modal-assunto-camada').innerText = `Camada Atual: C${camadaAtual} (Meta: ${getMetaText(camadaAtual)})`;
+            
+            document.getElementById('modal-assunto-nome').innerText = assunto.nome;
+            const camadaAtual = assunto.camadaAtual || 1;
+            document.getElementById('modal-assunto-camada').innerText = `Camada ${camadaAtual} (Alvo: ${getMetaText(camadaAtual)})`;
             
             document.getElementById('input-feitas').value = '';
             document.getElementById('input-erros').value = '';
             document.getElementById('input-obs').value = '';
             
-            setConfiancaModal(2);
-
-            const modal = document.getElementById('modal-afericao');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
+            window.setConfianca(2); 
+            
+            const modal = document.getElementById('modal-questoes');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
         };
 
-        window.fecharModalAfericao = () => {
-            const modal = document.getElementById('modal-afericao');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
+        window.fecharModal = () => {
+            document.getElementById('modal-questoes').classList.add('hidden'); document.getElementById('modal-questoes').classList.remove('flex');
         };
 
-        window.salvarBateriaModal = () => {
+        window.salvarBateria = () => {
             const discId = document.getElementById('modal-disc-id').value;
             const assuntoId = document.getElementById('modal-assunto-id').value;
-            
             const feitas = parseInt(document.getElementById('input-feitas').value);
             const erros = parseInt(document.getElementById('input-erros').value);
             const obs = document.getElementById('input-obs').value.trim();
 
-            if (isNaN(feitas) || isNaN(erros) || feitas <= 0 || erros > feitas) {
-                alert("Por favor, preencha a quantidade de questões feitas e erros corretamente.");
-                return;
-            }
+            if (isNaN(feitas) || isNaN(erros) || feitas <= 0 || erros > feitas) { alert("Valores inválidos."); return; }
 
-            const obj = getObjetivoAtivoObj();
+            const obj = getObjetivoAtivo();
             const disc = obj.disciplinas.find(d => d.id === discId);
             const assunto = disc.assuntos.find(a => a.id === assuntoId);
 
             const acertos = feitas - erros;
-            // Percentual real para lógica matemática e arredondado para visualização
             const percentualReal = (acertos / feitas) * 100;
-            const percVisual = Math.round(percentualReal);
+            const percVisual = Math.round(percentualReal); 
 
-            // Calcula nova revisão RARD
-            const proximaDataISO = calcularProximaRevisaoRARD(currentConfiancaModal, percentualReal);
-            assunto.proximaRevisao = proximaDataISO;
+            const avaliacao = avaliarProgresso(assunto, percentualReal);
 
-            // Registra a bateria append-only
+            let diasParaRevisao = 7;
+            if (currentConfianca === 1 || percentualReal < 65) diasParaRevisao = 1; 
+            else if (currentConfianca === 2 || percentualReal < 85) diasParaRevisao = 7; 
+            else if (currentConfianca === 3 && percentualReal >= 85) diasParaRevisao = 21; 
+
+            let proxRev = new Date();
+            proxRev.setDate(proxRev.getDate() + diasParaRevisao);
+            
+            assunto.nivelConfianca = currentConfianca;
+            assunto.proximaRevisao = proxRev.toISOString();
+
             assunto.historico.push({
-                id: 'bat_' + Date.now(),
-                data: new Date().toISOString(),
-                camadaNoMomento: assunto.camadaAtual || 0,
-                feitas: feitas,
-                erros: erros,
-                acertos: acertos,
-                perc: percVisual,
-                confianca: currentConfiancaModal,
-                obs: obs
+                id: Date.now().toString(), data: new Date().toISOString(), camadaAplicada: assunto.camadaAtual,
+                feitas, erros, acertos, perc: percVisual, obs, msgAcao: avaliacao.msgAcao, confianca: currentConfianca
             });
 
-            // Recalcula o estado da camada segundo o Método Camadas Strict
-            recalcularEstadoAssunto(assunto);
-
-            fecharModalAfericao();
-            salvarEstadoGeral();
+            if (avaliacao.avancou) assunto.camadaAtual += 1;
+            assunto.proximaAcao = { status: avaliacao.status, msg: avaliacao.msgAcao };
+            
+            fecharModal(); salvarDados();
         };
 
-        // Modal de Histórico
         window.abrirModalHistorico = (discId, assuntoId) => {
-            const obj = getObjetivoAtivoObj();
+            const obj = getObjetivoAtivo();
             const disc = obj.disciplinas.find(d => d.id === discId);
             const assunto = disc.assuntos.find(a => a.id === assuntoId);
-
             document.getElementById('hist-assunto-nome').innerText = `${disc.nome} > ${assunto.nome}`;
-            document.getElementById('hist-camada-atual').innerText = `C${assunto.camadaAtual || 0}`;
-
-            let totalQ = 0, totalE = 0;
-            const listaHTML = document.getElementById('hist-lista-baterias');
+            
+            const listaHTML = document.getElementById('lista-baterias');
             listaHTML.innerHTML = '';
 
             if (assunto.historico && assunto.historico.length > 0) {
                 [...assunto.historico].reverse().forEach(bat => {
-                    totalQ += bat.feitas;
-                    totalE += bat.erros;
-                    const dataStr = new Date(bat.data).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
-                    
-                    let iconConf = '';
-                    if (bat.confianca === 1) iconConf = '<span class="text-red-500 font-bold text-xs flex items-center gap-1"><i data-lucide="frown" class="w-3.5 h-3.5"></i> Instável</span>';
-                    else if (bat.confianca === 2) iconConf = '<span class="text-amber-500 font-bold text-xs flex items-center gap-1"><i data-lucide="meh" class="w-3.5 h-3.5"></i> Consolidando</span>';
-                    else if (bat.confianca === 3) iconConf = '<span class="text-emerald-600 font-bold text-xs flex items-center gap-1"><i data-lucide="smile" class="w-3.5 h-3.5"></i> Estável</span>';
+                    const dt = new Date(bat.data).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
+                    let iConf = '';
+                    if(bat.confianca===1) iConf = '<i data-lucide="frown" class="w-3 h-3 text-red-500 inline"></i>';
+                    if(bat.confianca===2) iConf = '<i data-lucide="meh" class="w-3 h-3 text-amber-500 inline"></i>';
+                    if(bat.confianca===3) iConf = '<i data-lucide="smile" class="w-3 h-3 text-green-500 inline"></i>';
 
                     listaHTML.innerHTML += `
-                        <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-2">
-                            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                                <span class="text-xs font-extrabold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-md">C${bat.camadaNoMomento || 0} &bull; ${dataStr}</span>
-                                <span class="text-base font-extrabold text-blue-600">${bat.perc}%</span>
+                        <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm text-sm">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">C${bat.camadaAplicada} &bull; ${dt} ${iConf}</span>
+                                <span class="font-bold text-blue-600 text-base">${bat.perc}%</span>
                             </div>
-                            <div class="flex items-center justify-between text-xs text-slate-600">
-                                <span>Feitas: <b>${bat.feitas}</b> | Acertos: <b>${bat.acertos}</b> | Erros: <b class="text-red-500">${bat.erros}</b></span>
-                                ${iconConf}
+                            <div class="flex gap-4 text-[11px] text-slate-500 mb-2">
+                                <span>Feitas: <b>${bat.feitas}</b></span> <span>Erros: <b class="text-red-500">${bat.erros}</b></span>
                             </div>
-                            ${bat.obs ? `<p class="text-xs text-slate-600 bg-slate-50 p-2 rounded-xl italic flex items-start gap-1"><i data-lucide="message-square" class="w-3.5 h-3.5 text-slate-400 mt-0.5 shrink-0"></i> "${bat.obs}"</p>` : ''}
+                            <p class="text-[11px] font-medium text-slate-600 bg-slate-50 p-1.5 rounded border border-slate-100">${bat.msgAcao}</p>
+                            ${bat.obs ? `<p class="text-[11px] text-slate-500 italic mt-1.5 flex gap-1"><i data-lucide="message-square" class="w-3 h-3"></i> ${bat.obs}</p>` : ''}
                         </div>
                     `;
                 });
-            } else {
-                listaHTML.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">Nenhuma aferição registrada para este assunto.</p>`;
-            }
-
-            const totalAcertos = totalQ - totalE;
-            const percGeral = totalQ > 0 ? Math.round((totalAcertos / totalQ) * 100) : 0;
-            document.getElementById('hist-total-q').innerText = totalQ;
-            document.getElementById('hist-geral-perc').innerText = percGeral + '%';
+            } else { listaHTML.innerHTML = `<p class="text-sm text-slate-400 text-center py-4">Sem histórico.</p>`; }
 
             const modal = document.getElementById('modal-historico');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
             lucide.createIcons();
         };
 
         window.fecharModalHistorico = () => {
-            const modal = document.getElementById('modal-historico');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
+            document.getElementById('modal-historico').classList.add('hidden'); document.getElementById('modal-historico').classList.remove('flex');
         };
 
-        window.adiarRevisaoRARD = (discId, assuntoId, dias) => {
-            const obj = getObjetivoAtivoObj();
-            const disc = obj.disciplinas.find(d => d.id === discId);
-            const assunto = disc.assuntos.find(a => a.id === assuntoId);
+        // --- RENDERIZAR TELA ---
+        function atualizarTela() {
+            const objAtivo = getObjetivoAtivo();
+            document.getElementById('label-objetivo-desktop').innerText = objAtivo.nome;
+            document.getElementById('label-objetivo-mobile').innerText = objAtivo.nome;
 
-            const novaData = new Date();
-            novaData.setDate(novaData.getDate() + dias);
-            assunto.proximaRevisao = novaData.toISOString();
-            salvarEstadoGeral();
-        };
-
-        // 9. RENDERIZAÇÃO DA INTERFACE UNIFICADA
-        function atualizarInterface() {
-            const obj = getObjetivoAtivoObj();
-
-            // Labels de Cabeçalho
-            document.getElementById('label-objetivo-desktop').innerText = obj.nome;
-            document.getElementById('label-objetivo-mobile').innerText = obj.nome;
-            document.getElementById('hoje-data-atual').innerText = new Date().toLocaleDateString('pt-BR');
-
-            // --- ABA 1: HOJE ---
-            if (!obj.disciplinas || obj.disciplinas.length === 0) {
-                document.getElementById('hoje-ciclo-materia').innerText = "Cadastre disciplinas...";
-            } else {
-                if (obj.cicloIndex >= obj.disciplinas.length) obj.cicloIndex = 0;
-                document.getElementById('hoje-ciclo-materia').innerText = obj.disciplinas[obj.cicloIndex].nome;
-            }
-
-            // Coleta de Revisões RARD e Alertas de Atenção
-            const hojeFim = new Date();
-            hojeFim.setHours(23, 59, 59, 999);
-
+            let kpiFeitas = 0, kpiErros = 0, kpiC3 = 0, kpiAlertas = 0;
+            const listaHTML = document.getElementById('lista-disciplinas');
+            const listaRevHTML = document.getElementById('container-revisoes-pendentes');
+            listaHTML.innerHTML = '';
+            listaRevHTML.innerHTML = '';
+            
             let revisoesPendentes = [];
-            let assuntosComAlerta = [];
-            let globalFeitas = 0, globalErros = 0, countC3 = 0, countAlertas = 0;
+            const hoje = new Date();
+            hoje.setHours(23,59,59,999); 
 
-            obj.disciplinas.forEach(disc => {
+            (objAtivo.disciplinas || []).forEach(disc => {
+                let htmlAssuntos = '';
+                
                 disc.assuntos.forEach(assunto => {
                     let aFeitas = 0, aErros = 0;
-                    if (assunto.historico) {
-                        assunto.historico.forEach(h => { aFeitas += h.feitas; aErros += h.erros; });
-                    }
-                    globalFeitas += aFeitas;
-                    globalErros += aErros;
+                    if(assunto.historico) { assunto.historico.forEach(h => { aFeitas += h.feitas; aErros += h.erros; }); }
 
-                    if (assunto.camadaAtual === 3) countC3++;
-                    if (assunto.proximaAcao && assunto.proximaAcao.status === 'alerta') {
-                        countAlertas++;
-                        assuntosComAlerta.push({ disc, assunto });
-                    }
+                    kpiFeitas += aFeitas; kpiErros += aErros;
+                    if(assunto.camadaAtual === 3) kpiC3++;
+                    if(assunto.proximaAcao?.status === 'alerta') kpiAlertas++;
 
-                    if (assunto.proximaRevisao && new Date(assunto.proximaRevisao) <= hojeFim) {
+                    if(assunto.proximaRevisao && new Date(assunto.proximaRevisao) <= hoje) {
                         revisoesPendentes.push({ disc, assunto, data: new Date(assunto.proximaRevisao) });
                     }
-                });
-            });
 
-            // Renderiza Hoje - Revisões
-            const cntRev = document.getElementById('hoje-lista-revisoes');
-            document.getElementById('hoje-count-revisoes').innerText = revisoesPendentes.length;
-            if (revisoesPendentes.length === 0) {
-                cntRev.innerHTML = `<p class="text-xs text-slate-400 text-center py-3">Sem revisões pendentes para hoje.</p>`;
-            } else {
-                cntRev.innerHTML = revisoesPendentes.slice(0, 3).map(r => `
-                    <div class="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-100 rounded-xl text-xs">
-                        <div class="truncate pr-2">
-                            <p class="font-bold text-slate-800 truncate">${r.assunto.nome}</p>
-                            <p class="text-[10px] text-slate-400 uppercase font-semibold">${r.disc.nome}</p>
-                        </div>
-                        <button onclick="abrirModalAfericao('${r.disc.id}', '${r.assunto.id}', '${r.assunto.nome.replace(/'/g, "\\'")}', ${r.assunto.camadaAtual || 0})" class="bg-blue-600 text-white font-bold px-3 py-1.5 rounded-lg shrink-0">
-                            Revisar
-                        </button>
-                    </div>
-                `).join('');
-            }
+                    const aPerc = aFeitas > 0 ? Math.round(((aFeitas - aErros) / aFeitas) * 100) : 0;
+                    const cClasse = `camada-${assunto.camadaAtual || 1}`;
+                    const corAcao = assunto.proximaAcao ? `status-${assunto.proximaAcao.status}` : 'status-neutro';
 
-            // Renderiza Hoje - Alertas
-            const cntAlt = document.getElementById('hoje-lista-alertas');
-            document.getElementById('hoje-count-alertas').innerText = assuntosComAlerta.length;
-            if (assuntosComAlerta.length === 0) {
-                cntAlt.innerHTML = `<p class="text-xs text-slate-400 text-center py-3">Nenhum alerta de desempenho no momento.</p>`;
-            } else {
-                cntAlt.innerHTML = assuntosComAlerta.slice(0, 3).map(a => `
-                    <div class="flex items-center justify-between p-2.5 bg-red-50 border border-red-100 rounded-xl text-xs">
-                        <div class="truncate pr-2">
-                            <p class="font-bold text-red-900 truncate">${a.assunto.nome}</p>
-                            <p class="text-[10px] text-red-700">${a.assunto.proximaAcao.msg}</p>
-                        </div>
-                        <button onclick="abrirModalAfericao('${a.disc.id}', '${a.assunto.id}', '${a.assunto.nome.replace(/'/g, "\\'")}', ${a.assunto.camadaAtual || 0})" class="bg-red-600 text-white font-bold px-3 py-1.5 rounded-lg shrink-0">
-                            Refazer
-                        </button>
-                    </div>
-                `).join('');
-            }
-
-            // --- ABA 2: MEU PLANO ---
-            const cntPlano = document.getElementById('plano-lista-ciclo');
-            if (!obj.disciplinas || obj.disciplinas.length === 0) {
-                cntPlano.innerHTML = `<p class="text-xs text-slate-400 col-span-full py-4 text-center">Nenhuma disciplina cadastrada no concurso ativo.</p>`;
-            } else {
-                cntPlano.innerHTML = obj.disciplinas.map((d, index) => {
-                    const isAtual = index === obj.cicloIndex;
-                    return `
-                        <div class="p-4 rounded-xl border ${isAtual ? 'border-blue-500 bg-blue-50/40 ring-2 ring-blue-500/20' : 'border-slate-200 bg-white'} shadow-sm flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <span class="w-7 h-7 rounded-full ${isAtual ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'} font-black text-xs flex items-center justify-center">
-                                    ${index + 1}
-                                </span>
-                                <div>
-                                    <h4 class="font-bold text-slate-800 text-sm">${d.nome}</h4>
-                                    <p class="text-[10px] text-slate-500">${d.assuntos.length} assuntos cadastrados</p>
+                    // O botão Aferir foi blindado e não envia mais o nome do assunto via HTML
+                    htmlAssuntos += `
+                        <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm hover:border-blue-300 transition">
+                            <div class="flex justify-between items-start mb-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded border ${cClasse}">C${assunto.camadaAtual||1}</span>
+                                    <h4 class="font-bold text-slate-800 text-sm leading-tight">${assunto.nome}</h4>
                                 </div>
+                                <span class="text-[11px] font-bold text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">${aPerc}%</span>
                             </div>
-                            ${isAtual ? '<span class="text-[10px] font-bold bg-blue-600 text-white px-2 py-0.5 rounded-full">FOCO ATUAL</span>' : ''}
-                        </div>
-                    `;
-                }).join('');
-            }
-
-            // --- ABA 3: CONTEÚDOS (CAMADAS) ---
-            const cntConteudo = document.getElementById('lista-disciplinas-conteudo');
-            cntConteudo.innerHTML = '';
-
-            if (!obj.disciplinas || obj.disciplinas.length === 0) {
-                cntConteudo.innerHTML = `<p class="text-xs text-slate-400 text-center py-8">Nenhuma disciplina cadastrada. Clique em "+ Nova Disciplina" para iniciar.</p>`;
-            } else {
-                obj.disciplinas.forEach(disc => {
-                    let htmlAssuntos = '';
-                    disc.assuntos.forEach(assunto => {
-                        let aFeitas = 0, aErros = 0;
-                        if (assunto.historico) {
-                            assunto.historico.forEach(h => { aFeitas += h.feitas; aErros += h.erros; });
-                        }
-
-                        const aAcertos = aFeitas - aErros;
-                        const aPercGlobal = aFeitas > 0 ? Math.round((aAcertos / aFeitas) * 100) : 0;
-
-                        const camadaClasse = `camada-${assunto.camadaAtual || 0}`;
-                        const camadaMeta = getMetaText(assunto.camadaAtual || 0);
-                        const statusCor = assunto.proximaAcao ? `status-${assunto.proximaAcao.status}` : 'status-neutro';
-
-                        htmlAssuntos += `
-                            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm hover:border-blue-300 transition space-y-3">
-                                <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
-                                    <div class="flex items-center gap-2.5">
-                                        <span class="text-xs font-black px-2.5 py-1 rounded-lg border ${camadaClasse}">C${assunto.camadaAtual || 0}</span>
-                                        <h4 class="font-bold text-slate-800 text-sm leading-tight">${assunto.nome}</h4>
-                                    </div>
-                                    <div class="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100 self-start md:self-auto">
-                                        <span>Meta: <b>${camadaMeta}</b></span> &bull;
-                                        <span>Baterias: <b>${assunto.historico ? assunto.historico.length : 0}</b></span> &bull;
-                                        <span>Acumulado: <b>${aFeitas} q.</b> <strong class="text-slate-800">(${aPercGlobal}%)</strong></span>
-                                    </div>
-                                </div>
-
-                                <p class="text-xs ${statusCor} flex items-center gap-1.5">
-                                    <i data-lucide="arrow-right-circle" class="w-3.5 h-3.5"></i> ${assunto.proximaAcao ? assunto.proximaAcao.msg : 'Aguardando 1ª aferição.'}
-                                </p>
-
-                                <div class="flex gap-2 pt-1 border-t border-slate-100">
-                                    <button onclick="abrirModalHistorico('${disc.id}', '${assunto.id}')" class="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1">
-                                        <i data-lucide="history" class="w-3.5 h-3.5"></i> Histórico
-                                    </button>
-                                    <button onclick="abrirModalAfericao('${disc.id}', '${assunto.id}', '${assunto.nome.replace(/'/g, "\\'")}', ${assunto.camadaAtual || 0})" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-xl text-xs font-bold transition shadow-sm flex items-center justify-center gap-1">
-                                        <i data-lucide="play" class="w-3.5 h-3.5"></i> Aferir
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                    });
-
-                    const estaAberta = disciplinasAbertasUI.has(disc.id);
-                    cntConteudo.innerHTML += `
-                        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-3">
-                            <div onclick="toggleDisciplinaUI('${disc.id}')" class="px-5 py-4 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition">
-                                <div class="flex items-center gap-3">
-                                    <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 transition-transform ${estaAberta ? 'rotate-180' : ''}"></i>
-                                    <h3 class="font-bold text-slate-800 text-base">${disc.nome}</h3>
-                                </div>
-                                <button onclick="adicionarAssuntoPrompt('${disc.id}', event)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1">
-                                    <i data-lucide="plus" class="w-3.5 h-3.5"></i> Assunto
+                            <p class="text-[11px] ${corAcao} mb-3 flex items-center gap-1"><i data-lucide="activity" class="w-3 h-3"></i> ${assunto.proximaAcao?.msg || 'Sem dados'}</p>
+                            
+                            <div class="flex gap-2">
+                                <button onclick="abrirModalHistorico('${disc.id}', '${assunto.id}')" class="flex-1 bg-slate-50 border border-slate-200 hover:bg-slate-100 py-1.5 rounded-lg text-xs font-semibold text-slate-600 transition">
+                                    Histórico
+                                </button>
+                                <button onclick="abrirModalQuestoes('${disc.id}', '${assunto.id}')" class="flex-1 bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-700 py-1.5 rounded-lg text-xs font-bold transition">
+                                    Aferir
                                 </button>
                             </div>
-                            <div class="${estaAberta ? 'block' : 'hidden'} bg-slate-50 border-t border-slate-200 p-4 space-y-3">
-                                ${htmlAssuntos || '<p class="text-xs text-slate-400 text-center py-3">Sem assuntos cadastrados nesta disciplina.</p>'}
-                            </div>
                         </div>
                     `;
                 });
-            }
 
-            // --- ABA 4: REVISÕES RARD ---
-            const cntRard = document.getElementById('container-revisoes-rard');
-            revisoesPendentes.sort((a, b) => a.data - b.data);
+                const estaAberta = disciplinasAbertas.has(disc.id);
+                listaHTML.innerHTML += `
+                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm mb-3">
+                        <div class="px-4 py-3 flex justify-between items-center cursor-pointer hover:bg-slate-50" onclick="toggleDisciplina('${disc.id}')">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 transition-transform ${estaAberta ? 'rotate-180' : ''}"></i>
+                                <h3 class="font-bold text-slate-800 text-base">${disc.nome}</h3>
+                            </div>
+                            <button onclick="adicionarAssunto('${disc.id}', event)" class="bg-slate-100 hover:bg-slate-200 text-slate-600 p-1.5 rounded-md transition"><i data-lucide="plus" class="w-4 h-4"></i></button>
+                        </div>
+                        <div class="${estaAberta ? 'grid grid-cols-1 md:grid-cols-2 gap-3' : 'hidden'} bg-slate-50 border-t border-slate-100 p-3">
+                            ${htmlAssuntos || '<p class="text-xs text-slate-400 text-center py-2 col-span-full">Sem assuntos cadastrados.</p>'}
+                        </div>
+                    </div>
+                `;
+            });
 
-            const countRardTotal = revisoesPendentes.length;
-            if (countRardTotal > 0) {
-                document.getElementById('badge-rev-desktop').innerText = countRardTotal;
+            revisoesPendentes.sort((a,b) => a.data - b.data); 
+            
+            const numRev = revisoesPendentes.length;
+            if(numRev > 0) {
+                document.getElementById('badge-rev-desktop').innerText = numRev;
                 document.getElementById('badge-rev-desktop').classList.remove('hidden');
-                document.getElementById('badge-rev-mobile').innerText = countRardTotal;
+                document.getElementById('badge-rev-mobile').innerText = numRev;
                 document.getElementById('badge-rev-mobile').classList.remove('hidden');
             } else {
                 document.getElementById('badge-rev-desktop').classList.add('hidden');
                 document.getElementById('badge-rev-mobile').classList.add('hidden');
             }
 
-            if (revisoesPendentes.length === 0) {
-                cntRard.innerHTML = `
-                    <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-6 text-center text-emerald-800 space-y-2">
-                        <i data-lucide="check-circle-2" class="w-10 h-10 text-emerald-500 mx-auto"></i>
-                        <h3 class="font-bold text-base">Tudo em dia!</h3>
-                        <p class="text-xs">Nenhuma revisão adaptativa pendente para hoje.</p>
-                    </div>
-                `;
+            if(revisoesPendentes.length === 0) {
+                listaRevHTML.innerHTML = `
+                    <div class="bg-green-50 border border-green-200 rounded-xl p-6 text-center text-green-700">
+                        <i data-lucide="check-circle" class="w-12 h-12 mx-auto mb-3 text-green-400"></i>
+                        <h3 class="font-bold text-lg">Tudo em dia!</h3>
+                        <p class="text-sm mt-1">Nenhuma revisão adaptativa pendente para hoje.</p>
+                    </div>`;
             } else {
-                cntRard.innerHTML = revisoesPendentes.map(item => {
+                revisoesPendentes.forEach(item => {
                     const atrasoDias = Math.floor((new Date() - item.data) / (1000 * 60 * 60 * 24));
-                    let tagAtraso = atrasoDias > 0 
-                        ? `<span class="bg-red-100 text-red-700 font-bold px-2 py-0.5 rounded text-[10px]">Atrasado ${atrasoDias}d</span>` 
-                        : `<span class="bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded text-[10px]">Hoje</span>`;
-
+                    let tagAtraso = atrasoDias > 0 ? `<span class="bg-red-100 text-red-700 font-bold px-2 py-0.5 rounded text-[10px]">Atrasado ${atrasoDias}d</span>` : `<span class="bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded text-[10px]">Para Hoje</span>`;
+                    
                     let ultObs = "";
-                    if (item.assunto.historico && item.assunto.historico.length > 0) {
-                        const h = item.assunto.historico[item.assunto.historico.length - 1];
-                        if (h.obs) ultObs = `<p class="text-xs text-amber-900 bg-amber-50 border border-amber-200 p-2 rounded-xl italic mt-2"><span class="font-bold">Atenção no último erro:</span> "${h.obs}"</p>`;
+                    if(item.assunto.historico && item.assunto.historico.length > 0) {
+                        const h = item.assunto.historico[item.assunto.historico.length-1];
+                        if(h.obs) ultObs = `<div class="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-2 rounded mt-2"><span class="font-bold">Atenção no seu último erro:</span> ${h.obs}</div>`;
                     }
 
-                    return `
-                        <div class="bg-white border-l-4 border-blue-600 rounded-2xl p-4 border-y border-r border-slate-200 shadow-sm space-y-2">
-                            <div class="flex justify-between items-center">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">${item.disc.nome}</span>
+                    // Botão Aferir (Iniciar Revisão) blindado da mesma forma
+                    listaRevHTML.innerHTML += `
+                        <div class="bg-white border-l-4 border-blue-500 rounded-lg p-4 shadow-sm">
+                            <div class="flex justify-between items-start mb-1">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">${item.disc.nome}</p>
                                 ${tagAtraso}
                             </div>
-                            <h4 class="font-bold text-slate-800 text-base leading-tight">${item.assunto.nome}</h4>
+                            <h4 class="font-bold text-slate-800 text-base mb-2">${item.assunto.nome}</h4>
                             ${ultObs}
-                            <div class="flex gap-2 pt-2">
-                                <button onclick="abrirModalAfericao('${item.disc.id}', '${item.assunto.id}', '${item.assunto.nome.replace(/'/g, "\\'")}', ${item.assunto.camadaAtual || 0})" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-1 shadow-sm">
-                                    <i data-lucide="play" class="w-3.5 h-3.5"></i> Iniciar Revisão
+                            <div class="flex gap-2 mt-4">
+                                <button onclick="abrirModalQuestoes('${item.disc.id}', '${item.assunto.id}')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1 transition shadow-sm">
+                                    <i data-lucide="play" class="w-4 h-4"></i> Iniciar Revisão
                                 </button>
-                                <button onclick="adiarRevisaoRARD('${item.disc.id}', '${item.assunto.id}', 1)" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-2 rounded-xl text-xs font-bold transition">
+                                <button onclick="adiarRevisao('${item.disc.id}', '${item.assunto.id}', 1)" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded-lg text-sm font-bold transition" title="Adiar para amanhã">
                                     +1 Dia
                                 </button>
                             </div>
                         </div>
                     `;
-                }).join('');
+                });
             }
 
-            // --- ABA 5: DESEMPENHO ---
-            const kpiPerc = globalFeitas > 0 ? Math.round(((globalFeitas - globalErros) / globalFeitas) * 100) : 0;
-            document.getElementById('kpi-total-questoes').innerText = globalFeitas > 0 ? globalFeitas : "Sem dados";
-            document.getElementById('kpi-percentual-geral').innerText = globalFeitas > 0 ? kpiPerc + '%' : "Sem dados";
-            document.getElementById('kpi-c3-count').innerText = countC3;
-            document.getElementById('kpi-alertas-count').innerText = countAlertas;
-
-            // Tabela por disciplina
-            const cntTab = document.getElementById('desempenho-tabela-disciplinas');
-            if (!obj.disciplinas || obj.disciplinas.length === 0) {
-                cntTab.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Sem disciplinas salvas.</p>`;
-            } else {
-                let rowsHtml = obj.disciplinas.map(d => {
-                    let dFeitas = 0, dErros = 0;
-                    d.assuntos.forEach(a => {
-                        if (a.historico) a.historico.forEach(h => { dFeitas += h.feitas; dErros += h.erros; });
-                    });
-                    const dAcertos = dFeitas - dErros;
-                    const dPerc = dFeitas > 0 ? Math.round((dAcertos / dFeitas) * 100) : 0;
-
-                    return `
-                        <tr class="border-b border-slate-100 text-xs">
-                            <td class="py-3 px-2 font-bold text-slate-800">${d.nome}</td>
-                            <td class="py-3 px-2 text-center text-slate-600">${d.assuntos.length}</td>
-                            <td class="py-3 px-2 text-center font-bold text-slate-800">${dFeitas > 0 ? dFeitas : 'Sem dados'}</td>
-                            <td class="py-3 px-2 text-center font-extrabold ${dPerc >= 85 ? 'text-emerald-600' : dPerc >= 75 ? 'text-blue-600' : 'text-slate-600'}">
-                                ${dFeitas > 0 ? dPerc + '%' : 'Sem dados'}
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-
-                cntTab.innerHTML = `
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="border-b border-slate-200 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                                <th class="pb-2 px-2">Disciplina</th>
-                                <th class="pb-2 px-2 text-center">Assuntos</th>
-                                <th class="pb-2 px-2 text-center">Questões</th>
-                                <th class="pb-2 px-2 text-center">Aproveitamento</th>
-                            </tr>
-                        </thead>
-                        <tbody>${rowsHtml}</tbody>
-                    </table>
-                `;
-            }
+            const kpiPercGeral = kpiFeitas > 0 ? Math.round(((kpiFeitas - kpiErros) / kpiFeitas) * 100) : 0;
+            document.getElementById('kpi-total').innerText = kpiFeitas;
+            document.getElementById('kpi-percent').innerText = kpiPercGeral + '%';
+            document.getElementById('kpi-c3').innerText = kpiC3;
+            document.getElementById('kpi-alerta').innerText = kpiAlertas;
 
             lucide.createIcons();
         }
 
-        // INICIALIZAÇÃO AUTOMÁTICA AO CARREGAR A PÁGINA
-        window.addEventListener('DOMContentLoaded', () => {
-            iniciarConexaoDados();
-        });
+        lucide.createIcons();
     </script>
 </body>
 </html>
-
