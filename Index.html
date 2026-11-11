@@ -15,7 +15,7 @@
         .camada-2 { background-color: #e0f2fe; color: #075985; border-color: #38bdf8; } 
         .camada-3 { background-color: #dcfce7; color: #166534; border-color: #4ade80; } 
         
-        /* Ocultar barra de rolagem (limpeza visual) */
+        /* Ocultar barra de rolagem */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -442,6 +442,25 @@
             
             return { avancou, status, msgAcao };
         }
+        
+        // --- FUNÇÃO DE RECÁLCULO SEGURO APÓS APAGAR BATERIA ---
+        function recalcularEstadoAssunto(assunto) {
+            // Reinicia a base do assunto
+            assunto.camadaAtual = 1;
+            assunto.proximaAcao = { status: 'neutro', msg: "Aguardando 1ª aferição." };
+            
+            if (!assunto.historico || assunto.historico.length === 0) return;
+            
+            // Re-avalia o histórico restante cronologicamente
+            assunto.historico.sort((a,b) => new Date(a.data) - new Date(b.data)).forEach(bat => {
+                bat.camadaAplicada = assunto.camadaAtual; // Ajusta o rótulo da camada no histórico
+                const avaliacao = avaliarProgresso(assunto, bat.perc);
+                
+                if (avaliacao.avancou) assunto.camadaAtual += 1;
+                assunto.proximaAcao = { status: avaliacao.status, msg: avaliacao.msgAcao };
+                assunto.nivelConfianca = bat.confianca || 2;
+            });
+        }
 
         window.setConfianca = (val) => {
             currentConfianca = val;
@@ -478,6 +497,15 @@
             salvarDados();
         };
 
+        // NOVO: Excluir Disciplina Completa
+        window.excluirDisciplina = (discId, event) => {
+            event.stopPropagation();
+            if(!confirm("Tem certeza que deseja apagar esta disciplina inteira e todo o seu histórico?")) return;
+            const obj = getObjetivoAtivo();
+            obj.disciplinas = obj.disciplinas.filter(d => d.id !== discId);
+            salvarDados();
+        };
+
         window.adicionarAssunto = (discId, event) => {
             event.stopPropagation();
             const nome = prompt("Novo Assunto:");
@@ -490,7 +518,32 @@
             disciplinasAbertas.add(discId); salvarDados();
         };
 
-        // ARQUITETURA BLINDADA: APENAS RECEBE IDs
+        // NOVO: Excluir Apenas um Assunto
+        window.excluirAssunto = (discId, assuntoId) => {
+            if(!confirm("Tem certeza que deseja apagar este assunto e todo o seu histórico de revisões?")) return;
+            const obj = getObjetivoAtivo();
+            const disc = obj.disciplinas.find(d => d.id === discId);
+            disc.assuntos = disc.assuntos.filter(a => a.id !== assuntoId);
+            salvarDados();
+        };
+
+        // NOVO: Apagar uma única Aferição/Bateria e recalcular
+        window.excluirBateria = (discId, assuntoId, batId) => {
+            if(!confirm("Tem certeza que deseja apagar esta aferição? A sua Camada atual será recalculada.")) return;
+            const obj = getObjetivoAtivo();
+            const disc = obj.disciplinas.find(d => d.id === discId);
+            const assunto = disc.assuntos.find(a => a.id === assuntoId);
+            
+            // Remove a bateria específica
+            assunto.historico = assunto.historico.filter(b => b.id !== batId);
+            
+            // Refaz os cálculos com o que restou
+            recalcularEstadoAssunto(assunto);
+            
+            salvarDados();
+            abrirModalHistorico(discId, assuntoId); // Recarrega o modal instantaneamente
+        };
+
         window.abrirModalQuestoes = (discId, assuntoId) => {
             const obj = getObjetivoAtivo();
             const disc = obj.disciplinas.find(d => d.id === discId);
@@ -575,8 +628,12 @@
                     if(bat.confianca===2) iConf = '<i data-lucide="meh" class="w-3 h-3 text-amber-500 inline"></i>';
                     if(bat.confianca===3) iConf = '<i data-lucide="smile" class="w-3 h-3 text-green-500 inline"></i>';
 
+                    // Lixeira adicionada ao card de histórico
                     listaHTML.innerHTML += `
-                        <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm text-sm">
+                        <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm text-sm relative pr-10">
+                            <button onclick="excluirBateria('${disc.id}', '${assunto.id}', '${bat.id}')" class="absolute top-3 right-3 text-slate-300 hover:text-red-500 transition" title="Apagar esta aferição">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
                             <div class="flex justify-between items-center mb-2">
                                 <span class="font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">C${bat.camadaAplicada} &bull; ${dt} ${iConf}</span>
                                 <span class="font-bold text-blue-600 text-base">${bat.perc}%</span>
@@ -635,16 +692,21 @@
                     const cClasse = `camada-${assunto.camadaAtual || 1}`;
                     const corAcao = assunto.proximaAcao ? `status-${assunto.proximaAcao.status}` : 'status-neutro';
 
-                    // O botão Aferir foi blindado e não envia mais o nome do assunto via HTML
                     htmlAssuntos += `
-                        <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm hover:border-blue-300 transition">
-                            <div class="flex justify-between items-start mb-2">
+                        <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm hover:border-blue-300 transition relative">
+                            <div class="flex justify-between items-start mb-2 pr-6">
                                 <div class="flex items-center gap-2">
                                     <span class="text-[10px] font-bold px-1.5 py-0.5 rounded border ${cClasse}">C${assunto.camadaAtual||1}</span>
                                     <h4 class="font-bold text-slate-800 text-sm leading-tight">${assunto.nome}</h4>
                                 </div>
                                 <span class="text-[11px] font-bold text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">${aPerc}%</span>
                             </div>
+                            
+                            <!-- Botão Lixeira do Assunto -->
+                            <button onclick="excluirAssunto('${disc.id}', '${assunto.id}')" class="absolute top-3 right-3 text-slate-300 hover:text-red-500 transition" title="Excluir assunto">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            </button>
+
                             <p class="text-[11px] ${corAcao} mb-3 flex items-center gap-1"><i data-lucide="activity" class="w-3 h-3"></i> ${assunto.proximaAcao?.msg || 'Sem dados'}</p>
                             
                             <div class="flex gap-2">
@@ -661,14 +723,20 @@
 
                 const estaAberta = disciplinasAbertas.has(disc.id);
                 listaHTML.innerHTML += `
-                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm mb-3">
+                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm mb-3 relative">
                         <div class="px-4 py-3 flex justify-between items-center cursor-pointer hover:bg-slate-50" onclick="toggleDisciplina('${disc.id}')">
                             <div class="flex items-center gap-2">
                                 <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 transition-transform ${estaAberta ? 'rotate-180' : ''}"></i>
                                 <h3 class="font-bold text-slate-800 text-base">${disc.nome}</h3>
                             </div>
-                            <button onclick="adicionarAssunto('${disc.id}', event)" class="bg-slate-100 hover:bg-slate-200 text-slate-600 p-1.5 rounded-md transition"><i data-lucide="plus" class="w-4 h-4"></i></button>
                         </div>
+                        
+                        <!-- Ações da Disciplina -->
+                        <div class="absolute top-2.5 right-4 flex gap-1">
+                            <button onclick="adicionarAssunto('${disc.id}', event)" class="bg-slate-100 hover:bg-blue-100 text-slate-600 hover:text-blue-700 px-2 py-1.5 rounded-md transition text-xs font-bold flex items-center gap-1"><i data-lucide="plus" class="w-3 h-3"></i> Assunto</button>
+                            <button onclick="excluirDisciplina('${disc.id}', event)" class="bg-slate-100 hover:bg-red-100 text-slate-400 hover:text-red-500 px-2 py-1.5 rounded-md transition"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+                        </div>
+
                         <div class="${estaAberta ? 'grid grid-cols-1 md:grid-cols-2 gap-3' : 'hidden'} bg-slate-50 border-t border-slate-100 p-3">
                             ${htmlAssuntos || '<p class="text-xs text-slate-400 text-center py-2 col-span-full">Sem assuntos cadastrados.</p>'}
                         </div>
@@ -707,7 +775,6 @@
                         if(h.obs) ultObs = `<div class="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-2 rounded mt-2"><span class="font-bold">Atenção no seu último erro:</span> ${h.obs}</div>`;
                     }
 
-                    // Botão Aferir (Iniciar Revisão) blindado da mesma forma
                     listaRevHTML.innerHTML += `
                         <div class="bg-white border-l-4 border-blue-500 rounded-lg p-4 shadow-sm">
                             <div class="flex justify-between items-start mb-1">
