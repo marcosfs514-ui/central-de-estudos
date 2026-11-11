@@ -134,13 +134,13 @@
             <div id="container-revisoes-pendentes" class="space-y-4 pb-20 md:pb-0"></div>
         </section>
 
-        <!-- ABA: DESEMPENHO (Global + Histórico Detalhado) -->
+        <!-- ABA: DESEMPENHO (Global + Histórico por Matéria) -->
         <section id="tab-desempenho" class="tab-content p-4 md:p-8 max-w-4xl mx-auto space-y-6 pb-24 md:pb-8">
             <div class="flex items-center gap-3 mb-6">
                 <i data-lucide="bar-chart-2" class="w-8 h-8 text-blue-600"></i>
                 <div>
                     <h2 class="text-2xl font-bold text-slate-800">Análise de Desempenho</h2>
-                    <p class="text-sm text-slate-500">Métricas globais e histórico detalhado por disciplina.</p>
+                    <p class="text-sm text-slate-500">Métricas globais e desempenho consolidado por disciplina.</p>
                 </div>
             </div>
             
@@ -164,9 +164,9 @@
                 </div>
             </div>
 
-            <!-- Desempenho Detalhado por Matéria -->
-            <h3 class="font-bold text-slate-800 text-lg mb-4 border-b border-slate-200 pb-2">Histórico por Matéria e Assunto</h3>
-            <div id="desempenho-detalhado" class="space-y-4"></div>
+            <!-- Desempenho por Matéria -->
+            <h3 class="font-bold text-slate-800 text-lg mb-4 border-b border-slate-200 pb-2">Desempenho por Matéria</h3>
+            <div id="desempenho-detalhado" class="space-y-3"></div>
             
         </section>
 
@@ -227,7 +227,10 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">2. Selecione os Assuntos</label>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-xs font-bold text-slate-500 uppercase">2. Selecione os Assuntos</label>
+                        <button onclick="toggleMarcarTodosAssuntos()" class="text-[11px] text-blue-600 font-semibold hover:underline">Marcar/Desmarcar Todos</button>
+                    </div>
                     <div id="lista-migrar-assuntos" class="bg-slate-50 border border-slate-200 rounded-lg p-2 space-y-1 max-h-48 overflow-y-auto"></div>
                 </div>
             </div>
@@ -239,7 +242,6 @@
         </div>
     </div>
 
-    <!-- Modais Anteriores Preservados (Lançar Bateria e Histórico) -->
     <!-- Modal Lançar Bateria -->
     <div id="modal-questoes" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center p-4 z-50 overflow-y-auto">
         <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden my-auto">
@@ -348,7 +350,6 @@
                     el.classList.remove('mobile-nav-active'); 
                     el.classList.add('text-slate-400'); 
                     
-                    // Reset do icone azul de conteúdos
                     if(id === 'mob-conteudos') {
                         const txt = el.querySelector('span');
                         if(txt) { txt.classList.remove('text-blue-600', 'font-bold'); }
@@ -372,7 +373,6 @@
             }
         };
 
-        // Inicializa com a aba Conteúdos
         setTimeout(() => switchTab('conteudos'), 100);
 
         // --- SISTEMA DE MIGRAÇÃO ---
@@ -446,7 +446,7 @@
             });
 
             if(sessoesOp === '') {
-                alert("Você precisa criar uma Nova Sessão de Estudo primeiro (no menu principal) para poder migrar conteúdos.");
+                alert("Você precisa criar uma Nova Sessão de Estudo primeiro (no menu lateral) para poder migrar conteúdos.");
                 return;
             }
 
@@ -468,6 +468,13 @@
             document.getElementById('modal-migrar').classList.remove('hidden'); document.getElementById('modal-migrar').classList.add('flex');
         };
 
+        window.toggleMarcarTodosAssuntos = () => {
+            const chks = document.querySelectorAll('.migrar-chk');
+            if(chks.length === 0) return;
+            const algumDesmarcado = Array.from(chks).some(c => !c.checked);
+            chks.forEach(c => c.checked = algumDesmarcado);
+        };
+
         window.fecharModalMigrar = () => { document.getElementById('modal-migrar').classList.add('hidden'); document.getElementById('modal-migrar').classList.remove('flex'); };
 
         window.confirmarMigracao = () => {
@@ -482,28 +489,32 @@
             const objAtual = getObjetivoAtivo();
             const discOriginal = objAtual.disciplinas.find(d => d.id === discId);
             
-            // Fazemos uma clonagem profunda (deep clone) para a nova sessão
-            const novaDisc = {
-                id: 'disc-' + Date.now() + Math.random().toString(36).substr(2,4),
-                nome: discOriginal.nome,
-                assuntos: []
-            };
+            const targetSessao = baseDados.objetivos.find(o => o.id === targetSessaoId);
+            if(!targetSessao.disciplinas) targetSessao.disciplinas = [];
+
+            let discDestino = targetSessao.disciplinas.find(d => d.nome.toLowerCase().trim() === discOriginal.nome.toLowerCase().trim());
+            
+            if(!discDestino) {
+                discDestino = {
+                    id: 'disc-' + Date.now() + Math.random().toString(36).substr(2,4),
+                    nome: discOriginal.nome,
+                    assuntos: []
+                };
+                targetSessao.disciplinas.push(discDestino);
+            }
 
             assuntosIds.forEach(aId => {
                 const assOriginal = discOriginal.assuntos.find(a => a.id === aId);
-                const assClone = JSON.parse(JSON.stringify(assOriginal));
-                // Geramos um novo ID para o clone para não haver conflitos na base
-                assClone.id = 'ass-' + Date.now() + Math.random().toString(36).substr(2,4);
-                novaDisc.assuntos.push(assClone);
+                if(!discDestino.assuntos.some(a => a.nome.toLowerCase().trim() === assOriginal.nome.toLowerCase().trim())) {
+                    const assClone = JSON.parse(JSON.stringify(assOriginal));
+                    assClone.id = 'ass-' + Date.now() + Math.random().toString(36).substr(2,4);
+                    discDestino.assuntos.push(assClone);
+                }
             });
-
-            const targetSessao = baseDados.objetivos.find(o => o.id === targetSessaoId);
-            if(!targetSessao.disciplinas) targetSessao.disciplinas = [];
-            targetSessao.disciplinas.push(novaDisc);
 
             salvarDados();
             fecharModalMigrar();
-            alert(`A matéria "${novaDisc.nome}" foi copiada com sucesso para a sessão "${targetSessao.nome}".`);
+            alert(`A matéria "${discOriginal.nome}" foi copiada com sucesso para a sessão "${targetSessao.nome}".`);
         };
 
         // --- FIREBASE ---
@@ -800,7 +811,7 @@
             let kpiFeitas = 0, kpiErros = 0, kpiC3 = 0, kpiAlertas = 0;
             const listaHTML = document.getElementById('lista-disciplinas');
             const listaRevHTML = document.getElementById('container-revisoes-pendentes');
-            let detalhadoHtml = ''; // Para o histórico de desempenho
+            let detalhadoHtml = '';
             
             listaHTML.innerHTML = '';
             listaRevHTML.innerHTML = '';
@@ -811,7 +822,6 @@
 
             (objAtivo.disciplinas || []).forEach(disc => {
                 let htmlAssuntos = '';
-                let htmlAssuntosDesempenho = '';
                 let discFeitas = 0, discErros = 0;
                 
                 disc.assuntos.forEach(assunto => {
@@ -859,17 +869,6 @@
                             </div>
                         </div>
                     `;
-
-                    // HTML Para aba Desempenho Detalhado
-                    htmlAssuntosDesempenho += `
-                        <div class="flex justify-between items-center py-2 border-b border-slate-100 last:border-0 hover:bg-slate-50 px-2 rounded transition">
-                            <span class="text-xs text-slate-600 font-medium truncate pr-2">${assunto.nome}</span>
-                            <div class="flex items-center gap-3 text-xs shrink-0">
-                                <span class="font-bold text-slate-500 w-6 text-center border rounded ${cClasse}">C${assunto.camadaAtual||1}</span>
-                                <span class="font-bold text-blue-600 w-8 text-right">${aPerc}%</span>
-                            </div>
-                        </div>
-                    `;
                 });
 
                 const estaAberta = disciplinasAbertas.has(disc.id);
@@ -896,16 +895,20 @@
                     </div>
                 `;
 
-                // Renderização Desempenho Detalhado
+                // Renderização Desempenho (Nível Disciplina Apenas)
                 const discPerc = discFeitas > 0 ? Math.round(((discFeitas - discErros) / discFeitas) * 100) : 0;
                 detalhadoHtml += `
-                    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm mb-4">
-                        <div class="flex justify-between items-center mb-3 pb-2 border-b border-slate-200">
+                    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm mb-3 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
                             <h3 class="font-bold text-slate-800 text-sm">${disc.nome}</h3>
-                            <div class="text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-100 px-2 py-1 rounded">Total: ${discPerc}%</div>
+                            <div class="flex gap-4 text-[11px] text-slate-500 mt-1.5">
+                                <span>Feitas: <b class="text-slate-700">${discFeitas}</b></span>
+                                <span>Erros: <b class="text-red-500">${discErros}</b></span>
+                            </div>
                         </div>
-                        <div class="space-y-1">
-                            ${htmlAssuntosDesempenho || '<p class="text-[11px] text-slate-400">Sem histórico de assuntos.</p>'}
+                        <div class="shrink-0 md:text-right flex md:flex-col items-center justify-between border-t md:border-t-0 border-slate-100 pt-2 md:pt-0">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Acerto Global</div>
+                            <div class="text-xl font-bold text-blue-600">${discPerc}%</div>
                         </div>
                     </div>
                 `;
