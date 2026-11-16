@@ -58,7 +58,7 @@
             </div>
         </div>
 
-        <nav class="flex-1 py-4 space-y-1">
+        <nav class="flex-1 py-4 space-y-1 overflow-y-auto">
             <button onclick="switchTab('conteudos')" id="nav-conteudos" class="nav-item nav-active w-full flex items-center gap-3 px-6 py-3 text-sm text-slate-500 text-left">
                 <i data-lucide="library" class="w-5 h-5"></i> Conteúdos (Camadas)
             </button>
@@ -71,14 +71,10 @@
             </button>
         </nav>
 
-        <div class="p-4 border-t border-slate-200 bg-slate-50 space-y-2">
-            <div id="cloud-status" class="flex items-center justify-between text-xs font-medium px-3 py-2 rounded bg-white border border-slate-200 text-slate-500 shadow-sm">
-                <span class="flex items-center gap-2"><i data-lucide="loader-2" class="w-3 h-3 animate-spin text-blue-500"></i> Conectando...</span>
+        <div class="p-3 border-t border-slate-200 bg-slate-50 space-y-2 shrink-0">
+            <div id="cloud-status" class="flex items-center justify-between text-xs font-medium px-2.5 py-2 rounded bg-white border border-slate-200 text-slate-500 shadow-sm cursor-pointer hover:border-blue-300 transition" onclick="vincularAparelho()" title="Clique para alterar o Código de Sincronização">
+                <!-- Preenchido via JS -->
             </div>
-            
-            <button onclick="vincularAparelho()" class="w-full text-[11px] font-semibold flex items-center justify-center gap-1.5 bg-blue-50 border border-blue-200 hover:bg-blue-100 py-2 rounded text-blue-700 transition" title="Sincronizar com outro navegador">
-                <i data-lucide="link" class="w-3.5 h-3.5"></i> Vincular Aparelho
-            </button>
 
             <div class="flex gap-2">
                 <button onclick="exportarBackup()" class="flex-1 text-[11px] font-semibold flex items-center justify-center gap-1 bg-white border border-slate-200 hover:bg-slate-100 py-1.5 rounded text-slate-600 transition" title="Exportar Backup JSON">
@@ -100,7 +96,7 @@
         </div>
         <div class="flex items-center gap-3">
             <button onclick="abrirModalSessoes()" id="label-objetivo-mobile" class="text-[11px] font-bold bg-slate-100 px-2 py-1 rounded text-slate-600 border border-slate-200 truncate max-w-[100px] hover:bg-slate-200">...</button>
-            <div id="cloud-status-mobile"><i data-lucide="loader-2" class="w-4 h-4 animate-spin text-blue-500"></i></div>
+            <div id="cloud-status-mobile" class="cursor-pointer" onclick="vincularAparelho()"><i data-lucide="loader-2" class="w-4 h-4 animate-spin text-blue-500"></i></div>
         </div>
     </header>
 
@@ -385,7 +381,7 @@
             if (dadosBrutos.objetivoAtivo && dadosBrutos.objetivos) return dadosBrutos;
             return {
                 objetivoAtivo: 'obj-migrado',
-                objetivos: [{ id: 'obj-migrado', nome: 'Concurso Atual', disciplinas: dadosBrutos.disciplinas || [], cicloIndex: dadosBrutos.cicloIndex || 0 }],
+                objetivos: [{ id: 'obj-migrado', nome: 'Sessão Principal', disciplinas: dadosBrutos.disciplinas || [], cicloIndex: dadosBrutos.cicloIndex || 0 }],
                 revisoes: [], cadernoErros: [], configuracoes: { metaHoras: 20 }
             };
         }
@@ -398,7 +394,7 @@
             return baseDados.objetivos.find(o => o.id === baseDados.objetivoAtivo) || baseDados.objetivos[0];
         }
 
-        // --- FIREBASE COM SINCRONIZAÇÃO DE ID ---
+        // --- FIREBASE COM SINCRONIZAÇÃO DE ID CLICÁVEL ---
         let userId = localStorage.getItem('estudei_tablet_id') || ('USER_' + Math.random().toString(36).substr(2, 6).toUpperCase());
         localStorage.setItem('estudei_tablet_id', userId);
 
@@ -425,7 +421,7 @@
 
         function mostrarStatusCloud(online, texto) {
             const statusHtm = online 
-                ? `<span class="flex items-center gap-1.5 text-green-600 font-semibold"><i data-lucide="cloud-check" class="w-4 h-4"></i> ${texto}</span><span class="text-[10px] text-slate-400 font-mono select-all" title="Seu Código de Sincronização">${userId}</span>`
+                ? `<span class="flex items-center gap-1.5 text-green-600 font-semibold"><i data-lucide="cloud-check" class="w-4 h-4"></i> ${texto}</span><span class="text-[10px] text-blue-600 font-mono font-bold underline select-all" title="Toque para alterar o código">${userId} <i data-lucide="edit-3" class="w-3 h-3 inline"></i></span>`
                 : `<span class="flex items-center gap-1.5 text-slate-400 font-semibold"><i data-lucide="cloud-off" class="w-4 h-4"></i> ${texto}</span>`;
             document.getElementById('cloud-status').innerHTML = statusHtm;
             const mob = document.getElementById('cloud-status-mobile');
