@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estudei - Centro de Preparação</title>
+    <title>Central de Estudo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -45,8 +45,7 @@
         <div class="p-6 border-b border-slate-100 flex items-center gap-3">
             <div class="bg-blue-600 p-2 rounded-lg"><i data-lucide="book-open" class="w-6 h-6 text-white"></i></div>
             <div>
-                <h1 class="text-xl font-bold text-slate-900 leading-tight">Estudei</h1>
-                <p class="text-[10px] text-slate-500 font-medium tracking-wide uppercase">Método Camadas</p>
+                <h1 class="text-xl font-bold text-slate-900 leading-tight">Central de Estudo</h1>
             </div>
         </div>
         
@@ -60,7 +59,7 @@
 
         <nav class="flex-1 py-4 space-y-1 overflow-y-auto">
             <button onclick="switchTab('conteudos')" id="nav-conteudos" class="nav-item nav-active w-full flex items-center gap-3 px-6 py-3 text-sm text-slate-500 text-left">
-                <i data-lucide="library" class="w-5 h-5"></i> Conteúdos (Planilha)
+                <i data-lucide="library" class="w-5 h-5"></i> Conteúdos
             </button>
             <button onclick="switchTab('desempenho')" id="nav-desempenho" class="nav-item w-full flex items-center gap-3 px-6 py-3 text-sm text-slate-500 text-left">
                 <i data-lucide="bar-chart-2" class="w-5 h-5"></i> Desempenho
@@ -88,7 +87,7 @@
     <header class="md:hidden flex justify-between items-center bg-white border-b border-slate-200 p-4 shrink-0 z-10 shadow-sm">
         <div class="flex items-center gap-2">
             <div class="bg-blue-600 p-1.5 rounded"><i data-lucide="book-open" class="w-4 h-4 text-white"></i></div>
-            <h1 class="text-base font-bold text-slate-900">Estudei</h1>
+            <h1 class="text-base font-bold text-slate-900">Central de Estudo</h1>
         </div>
         <div class="flex items-center gap-3">
             <button onclick="abrirModalSessoes()" id="label-objetivo-mobile" class="text-[11px] font-bold bg-slate-100 px-2 py-1 rounded text-slate-600 border border-slate-200 truncate max-w-[100px] hover:bg-slate-200">...</button>
@@ -303,14 +302,23 @@
         let docRef = null;
         let unsubscribe = null;
         
+        const userId = 'USER_VX3QPW';
+
         let baseDados = {
             objetivoAtivo: 'default-obj',
             objetivos: [], cadernoErros: [], configuracoes: { metaHoras: 20 }
         };
+
+        const localSalvo = localStorage.getItem(`estudei_dados_pro_${userId}`);
+        if (localSalvo) {
+            try {
+                baseDados = JSON.parse(localSalvo);
+            } catch(e) {}
+        }
+
         let disciplinasAbertas = new Set();
         let currentConfianca = 2;
 
-        // NAVEGAÇÃO ENXUTA (2 Abas)
         window.switchTab = (tabName) => {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById('tab-' + tabName).classList.add('active');
@@ -349,7 +357,6 @@
 
         setTimeout(() => switchTab('conteudos'), 100);
 
-        // --- SISTEMA DE MIGRAÇÃO ---
         function realizarMigracaoEstrutural(dadosBrutos) {
             if (dadosBrutos.objetivoAtivo && dadosBrutos.objetivos) return dadosBrutos;
             return {
@@ -367,9 +374,6 @@
             return baseDados.objetivos.find(o => o.id === baseDados.objetivoAtivo) || baseDados.objetivos[0];
         }
 
-        // --- FIREBASE COM ID ORIGINAL ---
-        const userId = 'USER_VX3QPW';
-
         function iniciarFirebase() {
             try {
                 if(!db) { const app = initializeApp(firebaseConfig); db = getFirestore(app); }
@@ -380,13 +384,17 @@
 
                 unsubscribe = onSnapshot(docRef, (docSnap) => {
                     if (docSnap.exists()) { 
-                        baseDados = realizarMigracaoEstrutural(docSnap.data()); 
+                        const dadosNuvem = realizarMigracaoEstrutural(docSnap.data());
+                        if (dadosNuvem.objetivos && dadosNuvem.objetivos.length > 0 && dadosNuvem.objetivos[0].disciplinas.length > 0) {
+                            baseDados = dadosNuvem;
+                            localStorage.setItem(`estudei_dados_pro_${userId}`, JSON.stringify(baseDados));
+                        }
                         atualizarTela(); 
                     } else { 
                         salvarNaNuvem(); 
                     }
-                }, () => { mostrarStatusCloud(false, "Offline"); });
-            } catch (error) { mostrarStatusCloud(false, "Erro Cloud"); }
+                }, () => { mostrarStatusCloud(false, "Offline (Local)"); atualizarTela(); });
+            } catch (error) { mostrarStatusCloud(false, "Erro Cloud"); atualizarTela(); }
         }
         
         iniciarFirebase();
@@ -426,14 +434,14 @@
                     if(confirm("Importação substituirá os dados atuais. Deseja continuar?")) {
                         baseDados = realizarMigracaoEstrutural(parsed);
                         await salvarDados();
-                        alert("Restaurado!");
+                        alert("Restaurado com sucesso!");
                     }
                 } catch(error) { alert("Formato inválido."); }
             };
             reader.readAsText(file);
         };
 
-        // --- GESTOR DE SESSÕES (Concursos) ---
+        // --- GESTOR DE SESSÕES ---
         window.abrirModalSessoes = () => {
             const html = document.getElementById('lista-sessoes');
             html.innerHTML = '';
@@ -441,12 +449,15 @@
             baseDados.objetivos.forEach(o => {
                 const ativo = o.id === baseDados.objetivoAtivo;
                 html.innerHTML += `
-                    <div class="flex items-center justify-between p-3 border border-slate-200 rounded-lg ${ativo ? 'bg-blue-50 border-blue-300' : 'bg-white hover:bg-slate-50 cursor-pointer'}" ${ativo ? '' : `onclick="mudarSessao('${o.id}')"`}>
+                    <div class="flex items-center justify-between p-3 border border-slate-200 rounded-lg ${ativo ? 'bg-blue-50 border-blue-300' : 'bg-white hover:bg-slate-50 cursor-pointer'} relative" ${ativo ? '' : `onclick="mudarSessao('${o.id}')"`}>
                         <div>
                             <p class="font-bold text-sm ${ativo ? 'text-blue-700' : 'text-slate-700'}">${o.nome}</p>
                             <p class="text-[10px] text-slate-500">${o.disciplinas ? o.disciplinas.length : 0} disciplinas</p>
                         </div>
-                        ${ativo ? '<span class="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full">Atual</span>' : '<i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>'}
+                        <div class="flex items-center gap-2">
+                            ${ativo ? '<span class="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full">Atual</span>' : '<i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>'}
+                            ${!ativo && baseDados.objetivos.length > 1 ? `<button onclick="excluirSessao('${o.id}', event)" class="text-slate-300 hover:text-red-500 p-1" title="Excluir sessão"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
+                        </div>
                     </div>
                 `;
             });
@@ -475,6 +486,22 @@
             }
         };
 
+        window.excluirSessao = (id, event) => {
+            event.stopPropagation();
+            if (baseDados.objetivos.length <= 1) {
+                alert("Você não pode excluir a única sessão restante.");
+                return;
+            }
+            if(!confirm("Tem certeza que deseja excluir esta sessão e todas as suas disciplinas?")) return;
+            
+            baseDados.objetivos = baseDados.objetivos.filter(o => o.id !== id);
+            if (baseDados.objetivoAtivo === id) {
+                baseDados.objetivoAtivo = baseDados.objetivos[0].id;
+            }
+            salvarDados();
+            abrirModalSessoes();
+        };
+
         // --- MIGRAÇÃO DE MATÉRIAS ---
         window.abrirModalMigrar = (discId) => {
             const obj = getObjetivoAtivo();
@@ -486,7 +513,7 @@
             });
 
             if(sessoesOp === '') {
-                alert("Você precisa criar uma Nova Sessão de Estudo primeiro (no menu lateral) para poder migrar conteúdos.");
+                alert("Crie uma Nova Sessão de Estudo primeiro (no menu lateral) para poder migrar conteúdos.");
                 return;
             }
 
@@ -524,7 +551,7 @@
             const checks = document.querySelectorAll('.migrar-chk:checked');
             const assuntosIds = Array.from(checks).map(chk => chk.value);
             
-            if(assuntosIds.length === 0) { alert("Selecione pelo menos um assunto para copiar."); return; }
+            if(assuntosIds.length === 0) { alert("Selecione pelo menos um assunto."); return; }
 
             const objAtual = getObjetivoAtivo();
             const discOriginal = objAtual.disciplinas.find(d => d.id === discId);
@@ -554,7 +581,7 @@
 
             salvarDados();
             fecharModalMigrar();
-            alert(`A matéria "${discOriginal.nome}" foi copiada com sucesso para a sessão "${targetSessao.nome}".`);
+            alert(`Copiado com sucesso para "${targetSessao.nome}".`);
         };
 
         // --- LÓGICA DE CAMADAS ---
@@ -617,7 +644,7 @@
 
         window.excluirDisciplina = (discId, event) => {
             event.stopPropagation();
-            if(!confirm("Tem certeza que deseja apagar esta disciplina inteira e todo o seu histórico?")) return;
+            if(!confirm("Tem certeza que deseja apagar esta disciplina e todo o seu histórico?")) return;
             const obj = getObjetivoAtivo();
             obj.disciplinas = obj.disciplinas.filter(d => d.id !== discId);
             salvarDados();
@@ -644,7 +671,7 @@
         };
 
         window.excluirBateria = (discId, assuntoId, batId) => {
-            if(!confirm("Tem certeza que deseja apagar esta aferição? A sua Camada atual será recalculada.")) return;
+            if(!confirm("Tem certeza que deseja apagar esta aferição? A Camada será recalculada.")) return;
             const obj = getObjetivoAtivo();
             const disc = obj.disciplinas.find(d => d.id === discId);
             const assunto = disc.assuntos.find(a => a.id === assuntoId);
