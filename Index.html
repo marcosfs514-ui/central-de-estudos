@@ -26,7 +26,7 @@
         .nav-item:hover:not(.nav-active) { background-color: #f8fafc; color: #334155; }
         .mobile-nav-active { color: #2563eb; font-weight: 600; }
         
-        /* Botões de Confiança RARD */
+        /* Botões de Confiança */
         .btn-conf-active { border-width: 2px; transform: scale(1.02); }
         .btn-conf-1.btn-conf-active { border-color: #ef4444; background-color: #fef2f2; }
         .btn-conf-2.btn-conf-active { border-color: #f59e0b; background-color: #fffbeb; }
@@ -60,11 +60,7 @@
 
         <nav class="flex-1 py-4 space-y-1 overflow-y-auto">
             <button onclick="switchTab('conteudos')" id="nav-conteudos" class="nav-item nav-active w-full flex items-center gap-3 px-6 py-3 text-sm text-slate-500 text-left">
-                <i data-lucide="library" class="w-5 h-5"></i> Conteúdos (Camadas)
-            </button>
-            <button onclick="switchTab('revisoes')" id="nav-revisoes" class="nav-item w-full flex items-center justify-between px-6 py-3 text-sm text-slate-500 text-left relative">
-                <div class="flex items-center gap-3"><i data-lucide="repeat" class="w-5 h-5"></i> Revisões RARD</div>
-                <span id="badge-rev-desktop" class="hidden bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
+                <i data-lucide="library" class="w-5 h-5"></i> Conteúdos (Planilha)
             </button>
             <button onclick="switchTab('desempenho')" id="nav-desempenho" class="nav-item w-full flex items-center gap-3 px-6 py-3 text-sm text-slate-500 text-left">
                 <i data-lucide="bar-chart-2" class="w-5 h-5"></i> Desempenho
@@ -103,7 +99,7 @@
     <!-- Main Content Area -->
     <main class="flex-1 overflow-y-auto relative bg-slate-50">
         
-        <!-- ABA: CONTEÚDOS (Principal) -->
+        <!-- ABA: CONTEÚDOS -->
         <section id="tab-conteudos" class="tab-content active p-4 md:p-8 max-w-4xl mx-auto space-y-6">
             <div class="flex items-center justify-between mb-6">
                 <div class="flex items-center gap-3">
@@ -118,21 +114,6 @@
                 </button>
             </div>
             <div id="lista-disciplinas" class="space-y-4 pb-20 md:pb-0"></div>
-        </section>
-
-        <!-- ABA: REVISÕES RARD -->
-        <section id="tab-revisoes" class="tab-content p-4 md:p-8 max-w-4xl mx-auto space-y-6">
-            <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center gap-3">
-                    <i data-lucide="repeat" class="w-8 h-8 text-blue-600"></i>
-                    <div>
-                        <h2 class="text-2xl font-bold text-slate-800">Revisões Inteligentes</h2>
-                        <p class="text-sm text-slate-500">Baseado no seu nível de retenção (Esquecimento zero).</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div id="container-revisoes-pendentes" class="space-y-4 pb-20 md:pb-0"></div>
         </section>
 
         <!-- ABA: DESEMPENHO -->
@@ -178,13 +159,6 @@
         <button onclick="switchTab('conteudos')" id="mob-conteudos" class="flex flex-col items-center p-3 text-slate-400 mobile-nav-active relative">
             <div class="absolute -top-3 bg-blue-600 text-white p-2 rounded-full shadow-lg"><i data-lucide="library" class="w-5 h-5"></i></div>
             <span class="text-[10px] mt-6 font-bold text-blue-600">Conteúdos</span>
-        </button>
-        <button onclick="switchTab('revisoes')" id="mob-revisoes" class="flex flex-col items-center p-3 text-slate-400 relative">
-            <div class="relative">
-                <i data-lucide="repeat" class="w-6 h-6 mb-1"></i>
-                <span id="badge-rev-mobile" class="hidden absolute -top-1 -right-2 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">0</span>
-            </div>
-            <span class="text-[10px]">Revisões</span>
         </button>
         <button onclick="switchTab('desempenho')" id="mob-desempenho" class="flex flex-col items-center p-3 text-slate-400">
             <i data-lucide="bar-chart-2" class="w-6 h-6 mb-1"></i><span class="text-[10px]">Análise</span>
@@ -247,7 +221,7 @@
     <div id="modal-questoes" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center p-4 z-50 overflow-y-auto">
         <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden my-auto">
             <div class="bg-slate-50 px-5 py-4 border-b border-slate-200 flex justify-between items-center">
-                <h3 class="font-bold text-slate-800">Aferição e Revisão</h3>
+                <h3 class="font-bold text-slate-800">Aferição de Desempenho</h3>
                 <button onclick="fecharModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             
@@ -271,9 +245,8 @@
                     </div>
                 </div>
 
-                <!-- Retenção RARD -->
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Nível de Retenção (Confiança)</label>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Nível de Confiança</label>
                     <div class="flex gap-2">
                         <button id="btn-conf-1" onclick="window.setConfianca(1)" class="flex-1 btn-conf-1 border border-slate-200 bg-slate-50 py-2 rounded-lg text-xs font-bold text-slate-600 flex flex-col items-center gap-1 transition">
                             <i data-lucide="frown" class="w-4 h-4 text-red-500"></i> Instável
@@ -332,12 +305,12 @@
         
         let baseDados = {
             objetivoAtivo: 'default-obj',
-            objetivos: [], revisoes: [], cadernoErros: [], configuracoes: { metaHoras: 20 }
+            objetivos: [], cadernoErros: [], configuracoes: { metaHoras: 20 }
         };
         let disciplinasAbertas = new Set();
         let currentConfianca = 2;
 
-        // NAVEGAÇÃO ENXUTA (3 Abas)
+        // NAVEGAÇÃO ENXUTA (2 Abas)
         window.switchTab = (tabName) => {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById('tab-' + tabName).classList.add('active');
@@ -345,7 +318,7 @@
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('nav-active'));
             document.getElementById('nav-' + tabName)?.classList.add('nav-active');
             
-            ['mob-conteudos', 'mob-revisoes', 'mob-desempenho'].forEach(id => {
+            ['mob-conteudos', 'mob-desempenho'].forEach(id => {
                 const el = document.getElementById(id);
                 if(el) { 
                     el.classList.remove('mobile-nav-active'); 
@@ -382,7 +355,7 @@
             return {
                 objetivoAtivo: 'obj-migrado',
                 objetivos: [{ id: 'obj-migrado', nome: 'Sessão Principal', disciplinas: dadosBrutos.disciplinas || [], cicloIndex: dadosBrutos.cicloIndex || 0 }],
-                revisoes: [], cadernoErros: [], configuracoes: { metaHoras: 20 }
+                cadernoErros: [], configuracoes: { metaHoras: 20 }
             };
         }
 
@@ -394,7 +367,7 @@
             return baseDados.objetivos.find(o => o.id === baseDados.objetivoAtivo) || baseDados.objetivos[0];
         }
 
-        // --- FIREBASE RESTAURADO COM O SEU ID ORIGINAL ---
+        // --- FIREBASE COM ID ORIGINAL ---
         const userId = 'USER_VX3QPW';
 
         function iniciarFirebase() {
@@ -584,7 +557,7 @@
             alert(`A matéria "${discOriginal.nome}" foi copiada com sucesso para a sessão "${targetSessao.nome}".`);
         };
 
-        // --- LÓGICA DE CAMADAS & RARD ---
+        // --- LÓGICA DE CAMADAS ---
         function getMetaText(camada) {
             if(camada === 1) return "75%";
             if(camada === 2) return "85%";
@@ -593,7 +566,7 @@
         }
 
         function avaliarProgresso(assunto, percentualBateria) {
-            let metaVal = 75, limiteAlerta = 65, atingiuMeta = false;
+            let limiteAlerta = 65, atingiuMeta = false;
             if (assunto.camadaAtual === 1) { atingiuMeta = percentualBateria >= 75; limiteAlerta = 65; } 
             else if (assunto.camadaAtual === 2) { atingiuMeta = percentualBateria >= 85; limiteAlerta = 75; } 
             else { atingiuMeta = percentualBateria > 90; limiteAlerta = 80; }
@@ -629,22 +602,6 @@
             document.getElementById('btn-conf-'+val).classList.add('btn-conf-active');
         };
 
-        window.adiarRevisao = (discId, assuntoId, diasAdd) => {
-            const obj = getObjetivoAtivo();
-            const disc = obj.disciplinas.find(d => d.id === discId);
-            const assunto = disc.assuntos.find(a => a.id === assuntoId);
-            
-            let dataAtual = new Date(assunto.proximaRevisao);
-            if(isNaN(dataAtual.getTime())) dataAtual = new Date(); 
-            
-            const hoje = new Date();
-            if(dataAtual < hoje) dataAtual = hoje;
-            
-            dataAtual.setDate(dataAtual.getDate() + diasAdd);
-            assunto.proximaRevisao = dataAtual.toISOString();
-            salvarDados();
-        };
-
         // --- MANIPULAÇÃO UI ---
         window.toggleDisciplina = (id) => {
             if (disciplinasAbertas.has(id)) disciplinasAbertas.delete(id); else disciplinasAbertas.add(id);
@@ -673,13 +630,13 @@
             getObjetivoAtivo().disciplinas.find(d => d.id === discId).assuntos.push({ 
                 id: Date.now().toString(), nome, camadaAtual: 1,
                 proximaAcao: { status: 'neutro', msg: "Aguardando 1ª aferição." }, historico: [],
-                nivelConfianca: 2, proximaRevisao: new Date().toISOString()
+                nivelConfianca: 2
             });
             disciplinasAbertas.add(discId); salvarDados();
         };
 
         window.excluirAssunto = (discId, assuntoId) => {
-            if(!confirm("Tem certeza que deseja apagar este assunto e todo o seu histórico de revisões?")) return;
+            if(!confirm("Tem certeza que deseja apagar este assunto e todo o seu histórico?")) return;
             const obj = getObjetivoAtivo();
             const disc = obj.disciplinas.find(d => d.id === discId);
             disc.assuntos = disc.assuntos.filter(a => a.id !== assuntoId);
@@ -742,17 +699,9 @@
 
             const avaliacao = avaliarProgresso(assunto, percentualReal);
 
-            let diasParaRevisao = 7;
-            if (currentConfianca === 1 || percentualReal < 65) diasParaRevisao = 1; 
-            else if (currentConfianca === 2 || percentualReal < 85) diasParaRevisao = 7; 
-            else if (currentConfianca === 3 && percentualReal >= 85) diasParaRevisao = 21; 
-
-            let proxRev = new Date();
-            proxRev.setDate(proxRev.getDate() + diasParaRevisao);
-            
             assunto.nivelConfianca = currentConfianca;
-            assunto.proximaRevisao = proxRev.toISOString();
 
+            if(!assunto.historico) assunto.historico = [];
             assunto.historico.push({
                 id: Date.now().toString(), data: new Date().toISOString(), camadaAplicada: assunto.camadaAtual,
                 feitas, erros, acertos, perc: percVisual, obs, msgAcao: avaliacao.msgAcao, confianca: currentConfianca
@@ -817,15 +766,9 @@
 
             let kpiFeitas = 0, kpiErros = 0, kpiC3 = 0, kpiAlertas = 0;
             const listaHTML = document.getElementById('lista-disciplinas');
-            const listaRevHTML = document.getElementById('container-revisoes-pendentes');
             let detalhadoHtml = '';
             
             listaHTML.innerHTML = '';
-            listaRevHTML.innerHTML = '';
-            
-            let revisoesPendentes = [];
-            const hoje = new Date();
-            hoje.setHours(23,59,59,999); 
 
             (objAtivo.disciplinas || []).forEach(disc => {
                 let htmlAssuntos = '';
@@ -841,15 +784,10 @@
                     if(assunto.camadaAtual === 3) kpiC3++;
                     if(assunto.proximaAcao?.status === 'alerta') kpiAlertas++;
 
-                    if(assunto.proximaRevisao && new Date(assunto.proximaRevisao) <= hoje) {
-                        revisoesPendentes.push({ disc, assunto, data: new Date(assunto.proximaRevisao) });
-                    }
-
                     const aPerc = aFeitas > 0 ? Math.round(((aFeitas - aErros) / aFeitas) * 100) : 0;
                     const cClasse = `camada-${assunto.camadaAtual || 1}`;
                     const corAcao = assunto.proximaAcao ? `status-${assunto.proximaAcao.status}` : 'status-neutro';
 
-                    // HTML Para aba Conteúdos
                     htmlAssuntos += `
                         <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm hover:border-blue-300 transition relative">
                             <div class="flex justify-between items-start mb-2 pr-6">
@@ -880,7 +818,6 @@
 
                 const estaAberta = disciplinasAbertas.has(disc.id);
                 
-                // Renderização Conteúdos
                 listaHTML.innerHTML += `
                     <div class="bg-white border border-slate-200 rounded-xl shadow-sm mb-3 relative">
                         <div class="px-4 py-3 flex justify-between items-center cursor-pointer hover:bg-slate-50" onclick="toggleDisciplina('${disc.id}')">
@@ -902,7 +839,6 @@
                     </div>
                 `;
 
-                // Renderização Desempenho (Nível Disciplina Apenas)
                 const discPerc = discFeitas > 0 ? Math.round(((discFeitas - discErros) / discFeitas) * 100) : 0;
                 detalhadoHtml += `
                     <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm mb-3 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -922,58 +858,6 @@
             });
 
             document.getElementById('desempenho-detalhado').innerHTML = detalhadoHtml || '<p class="text-sm text-slate-500 text-center py-8">Cadastre conteúdos para ver o histórico detalhado.</p>';
-
-            revisoesPendentes.sort((a,b) => a.data - b.data); 
-            
-            const numRev = revisoesPendentes.length;
-            if(numRev > 0) {
-                document.getElementById('badge-rev-desktop').innerText = numRev;
-                document.getElementById('badge-rev-desktop').classList.remove('hidden');
-                document.getElementById('badge-rev-mobile').innerText = numRev;
-                document.getElementById('badge-rev-mobile').classList.remove('hidden');
-            } else {
-                document.getElementById('badge-rev-desktop').classList.add('hidden');
-                document.getElementById('badge-rev-mobile').classList.add('hidden');
-            }
-
-            if(revisoesPendentes.length === 0) {
-                listaRevHTML.innerHTML = `
-                    <div class="bg-green-50 border border-green-200 rounded-xl p-6 text-center text-green-700">
-                        <i data-lucide="check-circle" class="w-12 h-12 mx-auto mb-3 text-green-400"></i>
-                        <h3 class="font-bold text-lg">Tudo em dia!</h3>
-                        <p class="text-sm mt-1">Nenhuma revisão adaptativa pendente para hoje.</p>
-                    </div>`;
-            } else {
-                revisoesPendentes.forEach(item => {
-                    const atrasoDias = Math.floor((new Date() - item.data) / (1000 * 60 * 60 * 24));
-                    let tagAtraso = atrasoDias > 0 ? `<span class="bg-red-100 text-red-700 font-bold px-2 py-0.5 rounded text-[10px]">Atrasado ${atrasoDias}d</span>` : `<span class="bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded text-[10px]">Para Hoje</span>`;
-                    
-                    let ultObs = "";
-                    if(item.assunto.historico && item.assunto.historico.length > 0) {
-                        const h = item.assunto.historico[item.assunto.historico.length-1];
-                        if(h.obs) ultObs = `<div class="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-2 rounded mt-2"><span class="font-bold">Atenção no seu último erro:</span> ${h.obs}</div>`;
-                    }
-
-                    listaRevHTML.innerHTML += `
-                        <div class="bg-white border-l-4 border-blue-500 rounded-lg p-4 shadow-sm">
-                            <div class="flex justify-between items-start mb-1">
-                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">${item.disc.nome}</p>
-                                ${tagAtraso}
-                            </div>
-                            <h4 class="font-bold text-slate-800 text-base mb-2">${item.assunto.nome}</h4>
-                            ${ultObs}
-                            <div class="flex gap-2 mt-4">
-                                <button onclick="abrirModalQuestoes('${item.disc.id}', '${item.assunto.id}')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1 transition shadow-sm">
-                                    <i data-lucide="play" class="w-4 h-4"></i> Iniciar Revisão
-                                </button>
-                                <button onclick="adiarRevisao('${item.disc.id}', '${item.assunto.id}', 1)" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded-lg text-sm font-bold transition" title="Adiar para amanhã">
-                                    +1 Dia
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
 
             const kpiPercGeral = kpiFeitas > 0 ? Math.round(((kpiFeitas - kpiErros) / kpiFeitas) * 100) : 0;
             document.getElementById('kpi-total').innerText = kpiFeitas;
